@@ -75,10 +75,10 @@ succeeded — an attacker has root. In a real SOC environment
 this would trigger an immediate P1 incident response.
 
 ## Dashboard queries used
-rule.id:5501
-rule.id:5402
-rule.id:5301
-rule.group:syscheck
+rule.id:5501;
+rule.id:5402;
+rule.id:5301;
+rule.group:syscheck;
 rule.description:su
 ## Alert correlation — the full attack story
 Reading the alerts in sequence tells the complete attack narrative:
