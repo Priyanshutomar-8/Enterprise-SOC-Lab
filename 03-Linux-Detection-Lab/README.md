@@ -5,11 +5,11 @@ detection verified in Wazuh SIEM and mapped to MITRE ATT&CK.
 
 ## Labs
 
-| # | Lab | MITRE | Rule ID | Severity | Status |
+| # | Lab | MITRE | Key Rule | Severity | Status |
 |---|---|---|---|---|---|
 | 01 | User creation detection | T1136.001 | 5902 | Level 8 | Complete |
 | 02 | Failed sudo attempts | T1548.003 | 5503 | Level 5 | Complete |
-| 03 | Privilege escalation | T1068 | 5501 | Level 5 | Planned |
+| 03 | Privilege escalation | T1548 | 5402 | Level 5 | Complete |
 | 04 | SSH brute force | T1110.001 | 5712 | Level 10 | Planned |
 | 05 | File Integrity Monitoring | T1565 | 550 | Level 7 | Planned |
 | 06 | Suspicious processes | T1543 | 533 | Level 5 | Planned |
