@@ -82,13 +82,13 @@ rule.group:syscheck;
 rule.description:su
 ## Alert correlation — the full attack story
 Reading the alerts in sequence tells the complete attack narrative:
-21:13:34 — PAM session opened    (attacker gains initial foothold)
-21:14:08 — Successful sudo ROOT  (first escalation attempt succeeds)
-21:14:30 — Successful sudo ROOT  (confirms root access)
-21:14:31 — PAM session opened    (new root session started)
-21:14:45 — Successful sudo ROOT  (repeated root access)
-21:14:59 — User missed password  (tried su with wrong password)
-21:15:05 — PAM session closed    (attacker cleans up session)
+21:13:34 — PAM session opened    (attacker gains initial foothold);
+21:14:08 — Successful sudo ROOT  (first escalation attempt succeeds);
+21:14:30 — Successful sudo ROOT  (confirms root access);
+21:14:31 — PAM session opened    (new root session started);
+21:14:45 — Successful sudo ROOT  (repeated root access);
+21:14:59 — User missed password  (tried su with wrong password);
+21:15:05 — PAM session closed    (attacker cleans up session);
 This timeline shows an attacker methodically escalating and
 establishing root access — a textbook privilege escalation chain.
 
