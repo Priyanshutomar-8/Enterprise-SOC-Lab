@@ -67,8 +67,8 @@ sudo userdel -r lowpriv_user
 | PAM module | PAM (Pluggable Authentication Module) |
 
 ## Dashboard queries used
-rule.id:550
-rule.id:5503 OR rule.id:5504
+rule.id:5503;
+rule.id:5503 OR rule.id:5504;
 rule.group:authentication_failed
 ## What Wazuh detected
 - PAM authentication failure captured from auth.log
