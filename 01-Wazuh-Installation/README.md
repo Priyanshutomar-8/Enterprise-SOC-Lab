@@ -1,4 +1,4 @@
-# Module 01 — Wazuh Installation
+# Module 01 - Wazuh Installation
 
 ## Objective
 Deploy a fully operational Wazuh 4.14.5 SIEM stack on Ubuntu Server,
