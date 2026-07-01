@@ -8,8 +8,8 @@ failed sudo attempts and verify Wazuh detects the authentication failures.
 | Field | Value |
 |---|---|
 | Tactic | Privilege Escalation |
-| Technique | T1548.003 — Sudo and Sudo Caching |
-| Secondary | T1078 — Valid Accounts |
+| Technique | T1548.003 - Sudo and Sudo Caching |
+| Secondary | T1078 - Valid Accounts |
 | Reference | https://attack.mitre.org/techniques/T1548/003/ |
 
 ## Why this matters
