@@ -1,4 +1,4 @@
-# Module 03 — Linux Detection Lab
+# Module 03 - Linux Detection Lab
 
 Attack simulations on the Kali Linux endpoint with
 detection verified in Wazuh SIEM and mapped to MITRE ATT&CK.
