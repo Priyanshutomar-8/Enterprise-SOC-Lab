@@ -1,4 +1,4 @@
-# Lab 04 — SSH Brute Force Detection
+# Lab 04 - SSH Brute Force Detection
 
 ## Objective
 Simulate an SSH brute force attack using Hydra and verify
