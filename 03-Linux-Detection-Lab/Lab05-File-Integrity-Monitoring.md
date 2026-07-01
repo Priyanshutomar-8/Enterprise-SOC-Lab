@@ -180,5 +180,4 @@ Rule 554 (file added) Level 5
 - Cleanup of malicious files also generates FIM alerts (good!)
 
 ## Status
-Complete -
-+64 FIM alerts confirmed, rules 550 and 554 verified
+Complete - 64 FIM alerts confirmed, rules 550 and 554 verified
