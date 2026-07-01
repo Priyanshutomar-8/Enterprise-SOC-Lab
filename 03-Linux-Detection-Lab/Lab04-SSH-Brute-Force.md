@@ -89,7 +89,7 @@ hydra -l admin -P /tmp/passwords.txt ssh://127.0.0.1 -t 4 -V
 | 5760 | sshd: authentication failed | Level 5 | High volume |
 | 5557 | unix_chkpwd: Password check failed | Level 5 | High volume |
 
-### Key alert — Rule 2502 Level 10
+### Key alert - Rule 2502 Level 10
 Rule 2502 is the brute force threshold detection.
 When Wazuh sees repeated password failures from the same
 source within a short window, it escalates to Level 10
@@ -103,10 +103,10 @@ Speed of attempts is itself an indicator humans cannot
 type passwords faster than a few per minute.
 
 ## Dashboard queries used
-- rule.id:5760;
-- rule.id:2502;
-- rule.id:5557;
-- rule.id:5712 OR rule.id:5720 OR rule.id:5760;
+- rule.id:5760
+- rule.id:2502
+- rule.id:5557
+- rule.id:5712 OR rule.id:5720 OR rule.id:5760
 - rule.group:authentication_failures
 ## What made this lab technically interesting
 Kali Linux 2025.4 no longer uses traditional /var/log/auth.log
@@ -143,7 +143,7 @@ Hydra brute force — 15 passwords × 3 users
 ↓
 Rules 5557, 5760 (individual) → 2502 (threshold breach)
 ↓
-Level 10 alert — P1 incident
+Level 10 alert - P1 incident
 ## Lessons learned
 - 744 alerts from one tool run shows why alert fatigue is real
 - Threshold-based rules (2502) are more actionable than individual failures
@@ -153,11 +153,11 @@ Level 10 alert — P1 incident
 - Fail2ban or similar should auto-block IPs after N failures
 
 ## Status
-Complete — 744 alerts confirmed, Level 10 brute force rule triggered
+Complete - 744 alerts confirmed, Level 10 brute force rule triggered
 
-## Critical finding — complete account takeover chain detected
+## Critical finding - complete account takeover chain detected
 
-### Rule 5715 — SSH authentication success (5 hits)
+### Rule 5715 - SSH authentication success (5 hits)
 After the brute force, Wazuh detected SUCCESSFUL logins:
 
 | Rule ID | Description | Severity | Significance |
