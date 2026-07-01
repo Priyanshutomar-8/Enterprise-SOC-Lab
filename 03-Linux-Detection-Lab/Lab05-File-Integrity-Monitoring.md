@@ -1,4 +1,4 @@
-# Lab 05 — File Integrity Monitoring (FIM)
+# Lab 05 - File Integrity Monitoring (FIM)
 
 ## Objective
 Simulate an attacker modifying critical system files and verify
@@ -8,15 +8,15 @@ Wazuh FIM detects every change in real time with cryptographic precision.
 | Field | Value |
 |---|---|
 | Tactic | Impact / Persistence |
-| Technique | T1565.001 — Stored Data Manipulation |
-| Secondary | T1136.001 — Create Account (via /etc/passwd) |
-| Third | T1053.003 — Cron Persistence |
+| Technique | T1565.001 - Stored Data Manipulation |
+| Secondary | T1136.001 - Create Account (via /etc/passwd) |
+| Third | T1053.003 - Cron Persistence |
 | Reference | https://attack.mitre.org/techniques/T1565/001/ |
 
 ## Why this matters
 File integrity monitoring is one of the most reliable detection
 techniques in security. Every serious attack eventually touches
-the filesystem — adding backdoor users, planting malware, modifying
+the filesystem adding backdoor users, planting malware, modifying
 configurations. FIM catches these changes regardless of how the
 attacker got in or what tools they used.
 
@@ -90,7 +90,7 @@ sudo bash -c 'echo "# test" >> /etc/sudoers'
 sudo bash -c 'echo "* * * * * root /bin/bash -c id" > /etc/cron.d/malicious_job'
 ```
 
-## Detection results — 64 hits
+## Detection results - 64 hits
 
 | Rule ID | Description | Severity | Trigger |
 |---|---|---|---|
@@ -98,17 +98,17 @@ sudo bash -c 'echo "* * * * * root /bin/bash -c id" > /etc/cron.d/malicious_job'
 | 554 | File added to the system | Level 5 | /bin/suspicious_binary created |
 
 ### Alert timeline
-21:47:48 — Rule 554: File added (/bin/suspicious_binary)
-21:47:48 — Rule 550: Integrity checksum changed (/etc/passwd)
-21:47:48 — Rule 550: Integrity checksum changed (/etc/hosts)
-21:47:48 — Rule 550: Integrity checksum changed (/etc/sudoers)
-21:47:48 — Rule 554: File added (/etc/cron.d/malicious_job)All alerts fired within milliseconds — real-time inotify detection.
+- 21:47:48 - Rule 554: File added (/bin/suspicious_binary)
+- 21:47:48 - Rule 550: Integrity checksum changed (/etc/passwd)
+- 21:47:48 - Rule 550: Integrity checksum changed (/etc/hosts)
+- 21:47:48 - Rule 550: Integrity checksum changed (/etc/sudoers)
+- 21:47:48 - Rule 554: File added (/etc/cron.d/malicious_job)All alerts fired within milliseconds real-time inotify detection.
 
 ## What FIM actually checks
 For each monitored file Wazuh stores and compares:
 - MD5 hash (detects content changes)
 - SHA1 hash (stronger integrity verification)
-- SHA256 hash (strongest — used for forensics)
+- SHA256 hash (strongest used for forensics)
 - File size
 - File permissions (chmod changes)
 - File owner (chown changes)
@@ -118,10 +118,10 @@ For each monitored file Wazuh stores and compares:
 Any change to ANY of these fields triggers an alert.
 
 ## Dashboard queries used
-rule.groups:syscheck
-rule.id:550
-rule.id:554
-rule.id:553
+- rule.groups:syscheck
+- rule.id:550
+- rule.id:554
+- rule.id:553
 ## FIM dedicated view
 Navigate to:
 Endpoint Security → File Integrity Monitoring → kali agent
@@ -132,7 +132,7 @@ Shows visual list of all changed files with before/after comparison.
 2. Compare old hash vs new hash for content verification
 3. Check who made the change (process and user context)
 4. Determine if change was authorized
-5. If unauthorized — restore from backup, preserve evidence
+5. If unauthorized restore from backup, preserve evidence
 
 ```bash
 # Investigation commands
@@ -158,21 +158,21 @@ Without realtime, FIM only detects changes at the next
 scheduled scan (every 300 seconds or 12 hours default).
 With realtime, Linux inotify notifies Wazuh the instant
 a file is opened for writing. This reduces detection time
-from hours to milliseconds — critical for stopping
+from hours to milliseconds critical for stopping
 attackers before they establish full persistence.
 
 ## MITRE ATT&CK mapping
 Initial Access → Execution → Persistence / Impact
 ↓
-T1565.001 — Modify /etc/passwd
-T1053.003 — Create /etc/cron.d/malicious_job
-T1136.001 — Backdoor via /etc/passwd
+T1565.001 - Modify /etc/passwd
+T1053.003 - Create /etc/cron.d/malicious_job
+T1136.001 - Backdoor via /etc/passwd
 ↓
 Rule 550 (checksum changed) Level 7
 Rule 554 (file added) Level 5
 64 total FIM alerts
 ## Lessons learned
-- Default Wazuh config monitors no directories — must configure
+- Default Wazuh config monitors no directories must configure
 - realtime="yes" is essential for fast detection
 - FIM catches attackers regardless of entry method
 - Hash comparison catches even single-byte file modifications
@@ -180,4 +180,5 @@ Rule 554 (file added) Level 5
 - Cleanup of malicious files also generates FIM alerts (good!)
 
 ## Status
-Complete — 64 FIM alerts confirmed, rules 550 and 554 verified
+Complete -
++64 FIM alerts confirmed, rules 550 and 554 verified
