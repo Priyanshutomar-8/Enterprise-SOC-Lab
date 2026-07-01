@@ -103,7 +103,7 @@ Speed of attempts is itself an indicator humans cannot
 type passwords faster than a few per minute.
 
 ## Dashboard queries used
-[200~rule.id:5760;
+rule.id:5760;
 rule.id:2502;
 rule.id:5557;
 rule.id:5712 OR rule.id:5720 OR rule.id:5760;
