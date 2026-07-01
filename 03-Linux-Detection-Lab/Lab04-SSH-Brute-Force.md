@@ -165,8 +165,7 @@ Level 10 alert - P1 incident
 - Fail2ban or similar should auto-block IPs after N failures
 
 ## Status
-Complete - 744 alerts confirmed, Level 10 brute force rule triggered
-<<<<<<< Updated upstream
+Complete - 744 alerts confirmed, Level 10 brute force rule triggered Updated upstream
 
 ## Critical finding - complete account takeover chain detected
 
@@ -204,5 +203,3 @@ after rule 5763 is the worst possible outcome it means:
 - Root password changed to strong password
 - SSH penalty activated automatically by srclimit
 - Wazuh captured the full attack chain for forensic analysis
-=======
->>>>>>> Stashed changes
