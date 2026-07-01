@@ -1,4 +1,4 @@
-# Lab 01 — Linux User Creation Detection
+# Lab 01: Linux User Creation Detection
 
 ## Objective
 Simulate a backdoor user account creation by an attacker
@@ -8,7 +8,7 @@ and verify Wazuh detects it in real time.
 | Field | Value |
 |---|---|
 | Tactic | Persistence |
-| Technique | T1136.001 — Create Account: Local Account |
+| Technique | T1136.001 - Create Account: Local Account |
 | Reference | https://attack.mitre.org/techniques/T1136/001/ |
 
 ## Why this matters
@@ -92,4 +92,4 @@ Add to sudo/admin group
 - Detection works even without endpoint agent restart
 
 ## Status
-Complete — alert confirmed in Wazuh dashboard
+Complete: alert confirmed in Wazuh dashboard
