@@ -97,7 +97,7 @@ sudo grep "lowpriv_user" /var/log/auth.log
 sudo last lowpriv_user
 ```
 
-## Alert correlation — what to look for next
+## Alert correlation - what to look for next
 If you see rule 5503 in production, immediately check for:
 - Rule 5902 (new user created) around the same time
 - Rule 5501 (su root attempt)
