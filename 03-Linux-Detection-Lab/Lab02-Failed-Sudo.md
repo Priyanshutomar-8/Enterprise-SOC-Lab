@@ -121,4 +121,4 @@ Wazuh rule 5503 triggered
 - Failed sudo is more suspicious than failed SSH, it means attacker is already inside
 
 ## Status
-Complete — alert confirmed in Wazuh dashboard
+Complete - alert confirmed in Wazuh dashboard
