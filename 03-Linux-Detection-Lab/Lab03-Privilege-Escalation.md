@@ -14,7 +14,7 @@ and verify Wazuh detects both failed attempts and successful root access.
 | Reference | https://attack.mitre.org/techniques/T1548/ |
 
 ## Why this matters
-Privilege escalation is the most critical phase of an attack —
+Privilege escalation is the most critical phase of an attack
 it is the moment an attacker transitions from limited user access
 to full system control. Once root is achieved, the attacker can:
 - Read all files including /etc/shadow (password hashes)
@@ -68,10 +68,10 @@ exit
 | 5501 | PAM: Login session opened | Level 3 | New session created |
 | 5502 | PAM: Login session closed | Level 3 | Session terminated |
 
-## Key alert — Rule 5402
+## Key alert - Rule 5402
 Rule 5402 is the most critical detection here.
 "Successful sudo to ROOT executed" means the escalation
-succeeded — an attacker has root. In a real SOC environment
+succeeded an attacker has root. In a real SOC environment
 this would trigger an immediate P1 incident response.
 
 ## Dashboard queries used
@@ -80,17 +80,17 @@ rule.id:5402;
 rule.id:5301;
 rule.group:syscheck;
 rule.description:su
-## Alert correlation — the full attack story
+## Alert correlation - the full attack story
 Reading the alerts in sequence tells the complete attack narrative:
-21:13:34 — PAM session opened    (attacker gains initial foothold);
-21:14:08 — Successful sudo ROOT  (first escalation attempt succeeds);
-21:14:30 — Successful sudo ROOT  (confirms root access);
-21:14:31 — PAM session opened    (new root session started);
-21:14:45 — Successful sudo ROOT  (repeated root access);
-21:14:59 — User missed password  (tried su with wrong password);
-21:15:05 — PAM session closed    (attacker cleans up session);
-This timeline shows an attacker methodically escalating and
-establishing root access — a textbook privilege escalation chain.
+- 21:13:34 - PAM session opened    (attacker gains initial foothold);
+- 21:14:08 - Successful sudo ROOT  (first escalation attempt succeeds);
+- 21:14:30 - Successful sudo ROOT  (confirms root access);
+- 21:14:31 - PAM session opened    (new root session started);
+- 21:14:45 - Successful sudo ROOT  (repeated root access);
+- 21:14:59 - User missed password  (tried su with wrong password);
+- 21:15:05 - PAM session closed    (attacker cleans up session);
+- This timeline shows an attacker methodically escalating and
+establishing root access - a textbook privilege escalation chain.
 
 ## Investigation steps
 1. Identify which user account performed the sudo to root
@@ -112,7 +112,7 @@ Each rule captures a different layer of the same event:
 - 5301 captures the PAM-level password failure
 - 5402 captures the successful sudo elevation
 - 5501/5502 captures session lifecycle
-Together they give a complete picture — failed attempt
+Together they give a complete picture failed attempt
 followed by successful escalation is the clearest possible
 indicator of privilege escalation.
 
