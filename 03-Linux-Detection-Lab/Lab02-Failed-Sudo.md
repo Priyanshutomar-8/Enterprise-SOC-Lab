@@ -1,4 +1,4 @@
-# Lab 02 — Failed Sudo Attempts Detection
+# Lab 02 - Failed Sudo Attempts Detection
 
 ## Objective
 Simulate an attacker attempting privilege escalation via repeated
