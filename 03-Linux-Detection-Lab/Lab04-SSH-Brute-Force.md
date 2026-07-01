@@ -8,7 +8,7 @@ Wazuh detects it with high-severity threshold-based alerting.
 | Field | Value |
 |---|---|
 | Tactic | Credential Access |
-| Technique | T1110.001 — Brute Force: Password Guessing |
+| Technique | T1110.001 - Brute Force: Password Guessing |
 | Reference | https://attack.mitre.org/techniques/T1110/001/ |
 
 ## Why this matters
@@ -21,7 +21,7 @@ of going online.
 
 Real world example: The 2016 Mirai botnet infected 600,000+
 devices primarily through SSH brute force using default credentials.
-Detecting brute force early is critical — once a password is found
+Detecting brute force early is critical once a password is found
 the attacker has immediate persistent access.
 
 ## Environment
@@ -92,30 +92,30 @@ hydra -l admin -P /tmp/passwords.txt ssh://127.0.0.1 -t 4 -V
 ### Key alert — Rule 2502 Level 10
 Rule 2502 is the brute force threshold detection.
 When Wazuh sees repeated password failures from the same
-source within a short window, it escalates to Level 10 —
+source within a short window, it escalates to Level 10
 the highest tier before critical. In a production SOC this
 would trigger a P1 incident and automatic IP blocking.
 
 ### Alert timeline
-All 744 alerts fired within a 10-second window (19:57:33 — 19:57:43)
+All 744 alerts fired within a 10-second window (19:57:33 - 19:57:43)
 confirming automated tooling rather than manual attempts.
-Speed of attempts is itself an indicator — humans cannot
+Speed of attempts is itself an indicator humans cannot
 type passwords faster than a few per minute.
 
 ## Dashboard queries used
-[200~rule.id:5760
-rule.id:2502
-rule.id:5557
-rule.id:5712 OR rule.id:5720 OR rule.id:5760
+[200~rule.id:5760;
+rule.id:2502;
+rule.id:5557;
+rule.id:5712 OR rule.id:5720 OR rule.id:5760;
 rule.group:authentication_failures
 ## What made this lab technically interesting
 Kali Linux 2025.4 no longer uses traditional /var/log/auth.log
-by default — it uses systemd journald. This required:
+by default it uses systemd journald. This required:
 1. Adding journald as a log source in Wazuh agent config
 2. Installing rsyslog to restore traditional log file support
 3. Restarting both rsyslog and wazuh-agent for changes to take effect
 
-This is a real-world skill — modern Linux distributions increasingly
+This is a real-world skill modern Linux distributions increasingly
 use journald, and SOC teams must ensure their SIEM agents are
 configured to collect from the correct log sources.
 
@@ -148,8 +148,8 @@ Level 10 alert — P1 incident
 - 744 alerts from one tool run shows why alert fatigue is real
 - Threshold-based rules (2502) are more actionable than individual failures
 - Speed of attempts distinguishes automated tools from human error
-- Modern Kali uses journald — SIEM log source config matters
-- Real brute force comes from external IPs — add GeoIP context in production
+- Modern Kali uses journald SIEM log source config matters
+- Real brute force comes from external IPs add GeoIP context in production
 - Fail2ban or similar should auto-block IPs after N failures
 
 ## Status
