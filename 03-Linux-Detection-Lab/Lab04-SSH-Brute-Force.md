@@ -103,11 +103,11 @@ Speed of attempts is itself an indicator humans cannot
 type passwords faster than a few per minute.
 
 ## Dashboard queries used
-rule.id:5760;
-rule.id:2502;
-rule.id:5557;
-rule.id:5712 OR rule.id:5720 OR rule.id:5760;
-rule.group:authentication_failures
+- rule.id:5760;
+- rule.id:2502;
+- rule.id:5557;
+- rule.id:5712 OR rule.id:5720 OR rule.id:5760;
+- rule.group:authentication_failures
 ## What made this lab technically interesting
 Kali Linux 2025.4 no longer uses traditional /var/log/auth.log
 by default it uses systemd journald. This required:
@@ -167,16 +167,16 @@ After the brute force, Wazuh detected SUCCESSFUL logins:
 | 5402 | Successful sudo to ROOT | Level 3 | Root access confirmed |
 
 ### Complete attack timeline (from Wazuh alerts)
-18:04 — Brute force begins (rule 5763 level 10)
-18:30 — SSH authentication success (rule 5715) ← password cracked
-18:39 — Further successful logins
-20:24 — Additional successful SSH sessions
-20:25 — Successful sudo to ROOT (rule 5402)
-20:25 — User password changed (rule 5555) ← attacker persistence
-20:25 — Session closed (rule 5502)
+- 18:04 — Brute force begins (rule 5763 level 10)
+- 18:30 — SSH authentication success (rule 5715) ← password cracked
+- 18:39 — Further successful logins
+- 20:24 — Additional successful SSH sessions
+- 20:25 — Successful sudo to ROOT (rule 5402)
+- 20:25 — User password changed (rule 5555) ← attacker persistence
+- 20:25 — Session closed (rule 5502)
 ### Why rule 5715 after brute force is a P0 incident
 In a real SOC environment, seeing rule 5715 fire immediately
-after rule 5763 is the worst possible outcome — it means:
+after rule 5763 is the worst possible outcome it means:
 1. The brute force SUCCEEDED
 2. The attacker now has valid credentials
 3. They can return any time without triggering brute force alerts
