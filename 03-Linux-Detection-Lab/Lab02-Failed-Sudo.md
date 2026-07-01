@@ -115,10 +115,10 @@ PAM authentication failures
 Wazuh rule 5503 triggered
 ## Lessons learned
 - Every sudo failure is logged and visible to Wazuh immediately
-- PAM is the authentication layer Linux uses — understanding it is key
+- PAM is the authentication layer Linux uses understanding it is key
 - Real attackers use automated tools that generate dozens of attempts
 - Threshold-based alerting (5+ failures = critical) improves signal quality
-- Failed sudo is more suspicious than failed SSH — it means attacker is already inside
+- Failed sudo is more suspicious than failed SSH, it means attacker is already inside
 
 ## Status
 Complete — alert confirmed in Wazuh dashboard
