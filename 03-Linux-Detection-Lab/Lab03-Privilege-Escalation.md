@@ -1,4 +1,4 @@
-# Lab 03 — Privilege Escalation Detection
+# Lab 03 - Privilege Escalation Detection
 
 ## Objective
 Simulate multiple privilege escalation techniques on a Linux endpoint
