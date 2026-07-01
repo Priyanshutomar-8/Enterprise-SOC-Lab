@@ -8,9 +8,9 @@ and verify Wazuh detects both failed attempts and successful root access.
 | Field | Value |
 |---|---|
 | Tactic | Privilege Escalation |
-| Technique | T1548 — Abuse Elevation Control Mechanism |
-| Sub-technique | T1548.003 — Sudo and Sudo Caching |
-| Secondary | T1078.003 — Valid Accounts: Local Accounts |
+| Technique | T1548 - Abuse Elevation Control Mechanism |
+| Sub-technique | T1548.003 - Sudo and Sudo Caching |
+| Secondary | T1078.003 - Valid Accounts: Local Accounts |
 | Reference | https://attack.mitre.org/techniques/T1548/ |
 
 ## Why this matters
@@ -75,11 +75,11 @@ succeeded an attacker has root. In a real SOC environment
 this would trigger an immediate P1 incident response.
 
 ## Dashboard queries used
-rule.id:5501;
-rule.id:5402;
-rule.id:5301;
-rule.group:syscheck;
-rule.description:su
+- rule.id:5501
+- rule.id:5402
+- rule.id:5301
+- rule.group:syscheck
+- rule.description:su
 ## Alert correlation - the full attack story
 Reading the alerts in sequence tells the complete attack narrative:
 - 21:13:34 - PAM session opened    (attacker gains initial foothold)
