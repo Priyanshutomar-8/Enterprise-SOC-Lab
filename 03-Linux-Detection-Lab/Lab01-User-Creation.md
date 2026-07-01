@@ -17,6 +17,7 @@ accounts as persistence backdoors. Even if the initial compromise
 vector is patched, the backdoor account remains active and gives
 the attacker a way back in.
 
+
 Real world example: In many ransomware attacks, the first thing
 threat actors do after breaching a network is create a hidden admin
 account before deploying the ransomware payload.
