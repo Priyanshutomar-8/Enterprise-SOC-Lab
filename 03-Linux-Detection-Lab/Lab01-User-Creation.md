@@ -1,4 +1,4 @@
-# Lab 01: Linux User Creation Detection
+# Lab 01 - Linux User Creation Detection
 
 ## Objective
 Simulate a backdoor user account creation by an attacker
@@ -92,4 +92,4 @@ Add to sudo/admin group
 - Detection works even without endpoint agent restart
 
 ## Status
-Complete: alert confirmed in Wazuh dashboard
+Complete - alert confirmed in Wazuh dashboard
