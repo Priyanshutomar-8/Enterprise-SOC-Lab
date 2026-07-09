@@ -90,15 +90,7 @@ hydra -l admin -P /tmp/passwords.txt ssh://127.0.0.1 -t 4 -V
 | 5557 | unix_chkpwd: Password check failed | Level 5 | High volume |
 
 ### Key alert - Rule 2502 Level 10
-Rule 2502 is the brute force threshold detection.
-When Wazuh sees repeated password failures from the same
-<<<<<<< Updated upstream
-source within a short window, it escalates to Level 10
-the highest tier before critical. In a production SOC this
-=======
-source within a short window, it escalates to Level 10, the highest tier before critical. In a production SOC this
->>>>>>> Stashed changes
-would trigger a P1 incident and automatic IP blocking.
+Rule 2502 is the brute force threshold detection. When Wazuh sees repeated password failures from the same source within a short window, it escalates to Level 10 the highest tier before critical. In a production SOC this source within a short window, it escalates to Level 10, the highest tier before critical. In a production SOC this would trigger a P1 incident and automatic IP blocking.
 
 ### Alert timeline
 All 744 alerts fired within a 10-second window (19:57:33 - 19:57:43)
@@ -107,19 +99,16 @@ Speed of attempts is itself an indicator humans cannot
 type passwords faster than a few per minute.
 
 ## Dashboard queries used
-<<<<<<< Updated upstream
 - rule.id:5760
 - rule.id:2502
 - rule.id:5557
 - rule.id:5712 OR rule.id:5720 OR rule.id:5760
 - rule.group:authentication_failures
-=======
 rule.id:5760;
 rule.id:2502;
 rule.id:5557;
 rule.id:5712 OR rule.id:5720 OR rule.id:5760;
 rule.group:authentication_failures
->>>>>>> Stashed changes
 ## What made this lab technically interesting
 Kali Linux 2025.4 no longer uses traditional /var/log/auth.log
 by default it uses systemd journald. This required:
@@ -166,8 +155,6 @@ Level 10 alert - P1 incident
 
 ## Status
 Complete - 744 alerts confirmed, Level 10 brute force rule triggered
-<<<<<<< Updated upstream
-
 ## Critical finding - complete account takeover chain detected
 
 ### Rule 5715 - SSH authentication success (5 hits)
@@ -204,5 +191,3 @@ after rule 5763 is the worst possible outcome it means:
 - Root password changed to strong password
 - SSH penalty activated automatically by srclimit
 - Wazuh captured the full attack chain for forensic analysis
-=======
->>>>>>> Stashed changes
