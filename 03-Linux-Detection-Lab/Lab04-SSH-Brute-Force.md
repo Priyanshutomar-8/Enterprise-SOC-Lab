@@ -154,12 +154,9 @@ Level 10 alert - P1 incident
 - Fail2ban or similar should auto-block IPs after N failures
 
 ## Status
-<<<<<<< HEAD
 Complete - 744 alerts confirmed, Level 10 brute force rule triggered
-=======
 Complete - 744 alerts confirmed, Level 10 brute force rule triggered Updated upstream
 
->>>>>>> 173adc140f289dc216f594a694c2224fe06315a9
 ## Critical finding - complete account takeover chain detected
 
 ### Rule 5715 - SSH authentication success (5 hits)
