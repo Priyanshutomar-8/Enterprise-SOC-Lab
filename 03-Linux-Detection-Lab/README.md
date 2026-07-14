@@ -13,6 +13,6 @@ detection verified in Wazuh SIEM and mapped to MITRE ATT&CK.
 | 04 | SSH brute force | T1110.001 | 2502 | Level 10 | 744 | Complete |
 | 05 | File Integrity Monitoring | T1565.001 | 550 | Level 7 | 64 | Complete |
 | 06 | Recon / Discovery detection | T1057 | 100301 | Level 12 | 3 | Complete |
-| 07 | Reverse shell detection | T1059 | 554 | Level 6 | - | Planned |
+| 07 | Reverse shell detection | T1059 | 100302 | Level 12 | 2 | Complete |
 | 08 | Cron persistence | T1053.003 | 2830 | Level 6 | - | Planned |
 | 09 | Root login detection | T1078.003 | 5501 | Level 5 | - | Planned |
