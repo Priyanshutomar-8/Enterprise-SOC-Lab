@@ -25,7 +25,7 @@ Wazuh SIEM on a three-endpoint virtual network.
 |---|---|---|
 | 01 | [Wazuh Installation](./01-Wazuh-Installation/) | Complete |
 | 02 | [Agent Enrollment](./02-Agent-Enrollment/) | Complete |
-| 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | In progress |
+| 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | Complete |
 | 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | Planned |
 | 05 | [Sysmon](./05-Sysmon/) | Planned |
 | 06 | [Active Directory](./06-Active-Directory/) | Planned |

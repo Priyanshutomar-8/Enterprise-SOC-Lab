@@ -15,4 +15,4 @@ detection verified in Wazuh SIEM and mapped to MITRE ATT&CK.
 | 06 | Recon / Discovery detection | T1057 | 100301 | Level 12 | 3 | Complete |
 | 07 | Reverse shell detection | T1059 | 100302 | Level 12 | 2 | Complete |
 | 08 | Cron persistence | T1053.003 | 100305 | Level 10 | 4 | Complete |
-| 09 | Root login detection | T1078.003 | 5501 | Level 5 | - | Planned |
+| 09 | Root login detection | T1078.003 | 100306/07 | Level 12 | 3 | Complete |
