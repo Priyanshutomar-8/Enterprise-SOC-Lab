@@ -25,7 +25,7 @@ CLI-driven workflow documented per lab.
 | 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100407 | Planned |
 | 09 | Automation + AI-assisted triage (capstone) | Active Response + Claude API | - | - | Planned |
 
-Custom detection rules are namespaced at **100400+** (Module 03 used 100300-100307).
+Custom detection rules are namespaced at **100400+**.
 
 ## Each lab includes
 - Objective and MITRE ATT&CK mapping
