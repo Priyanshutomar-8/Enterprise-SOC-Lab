@@ -17,7 +17,7 @@ CLI-driven workflow documented per lab.
 |---|---|---|---|---|---|
 | 01 | [Brute force](Lab01-Brute-Force.md) | 4625 | T1110.001 | 100400 | **Complete** |
 | 02 | [Suspicious logon (RDP / admin)](Lab02-Suspicious-Logon.md) | 4624, 4672 | T1078 / T1021.001 | 100401 | **Complete** |
-| 03 | Account creation + admin group add | 4720, 4732 | T1136.001 / T1098 | 100402 | Planned |
+| 03 | [Rogue admin account](Lab03-Rogue-Admin-Account.md) | 4720, 4732 | T1136.001 / T1098 | 100402 | **Complete** |
 | 04 | Persistence: service / scheduled task | 7045, 4698 | T1543.003 / T1053.005 | 100403 | Planned |
 | 05 | PowerShell abuse | 4104 | T1059.001 | 100404 | Planned |
 | 06 | Defense evasion: event log cleared | 1102 | T1070.001 | 100405 | Planned |
@@ -46,6 +46,6 @@ Defensive automation only. No credentials or API keys are committed to this
 repository.
 
 ## Status
-In progress - Labs 01 (brute force, 100400) and 02 (suspicious/admin logon,
-100401) complete and verified firing on a live Windows 11 endpoint. Labs 03-09
-planned.
+In progress - Labs 01 (brute force, 100400), 02 (suspicious/admin logon, 100401)
+and 03 (rogue admin account, 100402) complete and verified firing on a live
+Windows 11 endpoint. Labs 04-09 planned.
