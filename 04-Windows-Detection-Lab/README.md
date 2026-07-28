@@ -16,7 +16,7 @@ CLI-driven workflow documented per lab.
 | # | Lab | Windows Event | MITRE | Custom Rule | Status |
 |---|---|---|---|---|---|
 | 01 | [Brute force](Lab01-Brute-Force.md) | 4625 | T1110.001 | 100400 | **Complete** |
-| 02 | Suspicious logon (RDP / admin) | 4624, 4672 | T1078 / T1021.001 | 100401 | Planned |
+| 02 | [Suspicious logon (RDP / admin)](Lab02-Suspicious-Logon.md) | 4624, 4672 | T1078 / T1021.001 | 100401 | **Complete** |
 | 03 | Account creation + admin group add | 4720, 4732 | T1136.001 / T1098 | 100402 | Planned |
 | 04 | Persistence: service / scheduled task | 7045, 4698 | T1543.003 / T1053.005 | 100403 | Planned |
 | 05 | PowerShell abuse | 4104 | T1059.001 | 100404 | Planned |
@@ -46,5 +46,6 @@ Defensive automation only. No credentials or API keys are committed to this
 repository.
 
 ## Status
-In progress - Lab 01 (brute force, rule 100400) complete and verified firing on
-a live Windows 11 endpoint. Labs 02-09 planned.
+In progress - Labs 01 (brute force, 100400) and 02 (suspicious/admin logon,
+100401) complete and verified firing on a live Windows 11 endpoint. Labs 03-09
+planned.
