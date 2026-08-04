@@ -19,13 +19,22 @@ CLI-driven workflow documented per lab.
 | 02 | [Suspicious logon (RDP / admin)](Lab02-Suspicious-Logon.md) | 4624, 4672 | T1078 / T1021.001 | 100401 | **Complete** |
 | 03 | [Rogue admin account](Lab03-Rogue-Admin-Account.md) | 4720, 4732 | T1136.001 / T1098 | 100402 | **Complete** |
 | 04 | [Persistence: service / scheduled task](Lab04-Persistence.md) | 7045, 4698 | T1543.003 / T1053.005 | 100403, 100404 | **Complete** |
-| 05 | PowerShell abuse | 4104 | T1059.001 | 100405 | Planned |
-| 06 | Defense evasion: event log cleared | 1102 | T1070.001 | 100406 | Planned |
-| 07 | Defender tampering / exclusions | 5007 + Defender Operational | T1562.001 | 100407 | Planned |
-| 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100408 | Planned |
+| 05 | [PowerShell abuse](Lab05-PowerShell-Abuse.md) | 4104 | T1059.001 / T1105 | 100405, 100406 | **Complete** |
+| 06 | Defense evasion: event log cleared | 1102 | T1070.001 | 100407 | Planned |
+| 07 | Defender tampering / exclusions | 5007 + Defender Operational | T1562.001 | 100408 | Planned |
+| 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100409 | Planned |
 | 09 | Automation + AI-assisted triage (capstone) | Active Response + Claude API | - | - | Planned |
 
-Custom detection rules are namespaced at **100400+**.
+Custom detection rules are namespaced at **100400+**. The rule IDs for Labs
+06-08 shifted by one from the original plan because Labs 04 and 05 each needed
+two rules rather than one.
+
+## Log sources
+Labs 01-04 read the Windows **Security** channel. Lab 05 is the first to
+require a second channel - `Microsoft-Windows-PowerShell/Operational` - pushed
+to the agent via a dedicated `windows` agent group rather than by editing
+`ossec.conf` on the endpoint. Labs 06-08 will need the same treatment for the
+Defender Operational channel.
 
 ## Each lab includes
 - Objective and MITRE ATT&CK mapping
@@ -47,6 +56,11 @@ repository.
 
 ## Status
 In progress - Labs 01 (brute force, 100400), 02 (suspicious/admin logon,
-100401), 03 (rogue admin account, 100402), and 04 (persistence via service /
-scheduled task, 100403/100404) complete and verified firing on a live
-Windows 11 endpoint. Labs 05-09 planned.
+100401), 03 (rogue admin account, 100402), 04 (persistence via service /
+scheduled task, 100403/100404), and 05 (PowerShell download cradle,
+100405/100406) complete and verified firing on a live Windows 11 endpoint.
+Labs 06-09 planned.
+
+Lab 05 also documented a defect in the **shipped** Wazuh ruleset: rule 91837
+matches `Invoke-Expresion` (misspelled), so a fully-spelled `Invoke-Expression`
+download-and-execute cradle raises no alert at all on a default install.
