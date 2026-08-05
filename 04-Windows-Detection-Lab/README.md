@@ -20,7 +20,7 @@ CLI-driven workflow documented per lab.
 | 03 | [Rogue admin account](Lab03-Rogue-Admin-Account.md) | 4720, 4732 | T1136.001 / T1098 | 100402 | **Complete** |
 | 04 | [Persistence: service / scheduled task](Lab04-Persistence.md) | 7045, 4698 | T1543.003 / T1053.005 | 100403, 100404 | **Complete** |
 | 05 | [PowerShell abuse](Lab05-PowerShell-Abuse.md) | 4104 | T1059.001 / T1105 | 100405, 100406 | **Complete** |
-| 06 | Defense evasion: event log cleared | 1102 | T1070.001 | 100407 | Planned |
+| 06 | [Defense evasion: event log cleared](Lab06-Event-Log-Cleared.md) | 1102, 104 | T1070.001 | 100407 | **Complete** |
 | 07 | Defender tampering / exclusions | 5007 + Defender Operational | T1562.001 | 100408 | Planned |
 | 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100409 | Planned |
 | 09 | Automation + AI-assisted triage (capstone) | Active Response + Claude API | - | - | Planned |
@@ -57,10 +57,18 @@ repository.
 ## Status
 In progress - Labs 01 (brute force, 100400), 02 (suspicious/admin logon,
 100401), 03 (rogue admin account, 100402), 04 (persistence via service /
-scheduled task, 100403/100404), and 05 (PowerShell download cradle,
-100405/100406) complete and verified firing on a live Windows 11 endpoint.
-Labs 06-09 planned.
+scheduled task, 100403/100404), 05 (PowerShell download cradle,
+100405/100406), and 06 (event log cleared, 100407) complete and verified
+firing on a live Windows 11 endpoint. Labs 07-09 planned.
 
-Lab 05 also documented a defect in the **shipped** Wazuh ruleset: rule 91837
-matches `Invoke-Expresion` (misspelled), so a fully-spelled `Invoke-Expression`
-download-and-execute cradle raises no alert at all on a default install.
+Two defects in the **shipped** Wazuh ruleset were documented along the way:
+
+- **Lab 05** - rule 91837 matches `Invoke-Expresion` (misspelled), so a
+  fully-spelled `Invoke-Expression` download-and-execute cradle raises no alert
+  at all on a default install.
+- **Lab 06** - log clearing alerts at level 5. The better rule (60117, level 9)
+  is very likely unreachable because it loses a first-match race to a sibling,
+  and it maps to `T1070.004` (File Deletion) rather than `T1070.001` (Clear
+  Windows Event Logs). Wazuh's own sample event embedded above rule 63103 is
+  also stale, showing fields under `eventdata` that the live event places under
+  `logFileCleared`.
