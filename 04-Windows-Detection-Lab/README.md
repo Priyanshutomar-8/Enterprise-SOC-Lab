@@ -21,20 +21,22 @@ CLI-driven workflow documented per lab.
 | 04 | [Persistence: service / scheduled task](Lab04-Persistence.md) | 7045, 4698 | T1543.003 / T1053.005 | 100403, 100404 | **Complete** |
 | 05 | [PowerShell abuse](Lab05-PowerShell-Abuse.md) | 4104 | T1059.001 / T1105 | 100405, 100406 | **Complete** |
 | 06 | [Defense evasion: event log cleared](Lab06-Event-Log-Cleared.md) | 1102, 104 | T1070.001 | 100407 | **Complete** |
-| 07 | Defender tampering / exclusions | 5007 + Defender Operational | T1562.001 | 100408 | Planned |
-| 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100409 | Planned |
+| 07 | [Defender tampering / exclusions](Lab07-Defender-Tampering.md) | 5007, 5013, 4104 | T1562.001 | 100408, 100409, 100410 | **Complete** |
+| 08 | Ransomware: shadow-copy deletion | 4688 / 4104 (`vssadmin`/`wmic`) | T1490 | 100411 | Planned |
 | 09 | Automation + AI-assisted triage (capstone) | Active Response + Claude API | - | - | Planned |
 
-Custom detection rules are namespaced at **100400+**. The rule IDs for Labs
-06-08 shifted by one from the original plan because Labs 04 and 05 each needed
-two rules rather than one.
+Custom detection rules are namespaced at **100400+**. The rule IDs have drifted
+from the original plan because Labs 04 and 05 each needed two rules rather than
+one, and Lab 07 needed three - two on the *result* of the tampering (Defender
+channel) and one on the *method* (PowerShell script block).
 
 ## Log sources
 Labs 01-04 read the Windows **Security** channel. Lab 05 is the first to
 require a second channel - `Microsoft-Windows-PowerShell/Operational` - pushed
 to the agent via a dedicated `windows` agent group rather than by editing
-`ossec.conf` on the endpoint. Labs 06-08 will need the same treatment for the
-Defender Operational channel.
+`ossec.conf` on the endpoint. Lab 06 uses Security + System. Lab 07 adds a third
+channel, `Microsoft-Windows-Windows Defender/Operational`, through the same
+agent group.
 
 ## Each lab includes
 - Objective and MITRE ATT&CK mapping
@@ -58,10 +60,11 @@ repository.
 In progress - Labs 01 (brute force, 100400), 02 (suspicious/admin logon,
 100401), 03 (rogue admin account, 100402), 04 (persistence via service /
 scheduled task, 100403/100404), 05 (PowerShell download cradle,
-100405/100406), and 06 (event log cleared, 100407) complete and verified
-firing on a live Windows 11 endpoint. Labs 07-09 planned.
+100405/100406), 06 (event log cleared, 100407) and 07 (Defender tampering,
+100408/100409/100410) complete and verified firing on a live Windows 11
+endpoint. Labs 08-09 planned.
 
-Two defects in the **shipped** Wazuh ruleset were documented along the way:
+Defects in the **shipped** Wazuh ruleset documented along the way:
 
 - **Lab 05** - rule 91837 matches `Invoke-Expresion` (misspelled), so a
   fully-spelled `Invoke-Expression` download-and-execute cradle raises no alert
@@ -72,3 +75,11 @@ Two defects in the **shipped** Wazuh ruleset were documented along the way:
   Windows Event Logs). Wazuh's own sample event embedded above rule 63103 is
   also stale, showing fields under `eventdata` that the live event places under
   `logFileCleared`.
+- **Lab 07** - Defender event 5013 (Tamper Protection blocked a change) has no
+  shipped rule at all and is discarded at level 0; the ruleset's only `5013` is
+  rule 60691, an unrelated Application-channel event sharing the number. Adding
+  an exclusion and tuning scan CPU both alert as 62154 at level 5 with identical
+  text. The shipped `Set-MpPreference` detection (92007/92008) requires Sysmon,
+  so it cannot fire on a native-logs-only endpoint. The agent additionally
+  reports `ERROR_EVT_CHANNEL_NOT_FOUND` (15007) as "The eventlog service is
+  down", which points at the wrong fault.
