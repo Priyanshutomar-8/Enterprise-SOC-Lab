@@ -23,7 +23,7 @@ CLI-driven workflow documented per lab.
 | 06 | [Defense evasion: event log cleared](Lab06-Event-Log-Cleared.md) | 1102, 104 | T1070.001 | 100407 | **Complete** |
 | 07 | [Defender tampering / exclusions](Lab07-Defender-Tampering.md) | 5007, 5013, 4104 | T1562.001 | 100408, 100409, 100410 | **Complete** |
 | 08 | [Ransomware: shadow-copy deletion](Lab08-Shadow-Copy-Deletion.md) | 4688 (`vssadmin`/`bcdedit`) | T1490 | 100411 | **Complete** |
-| 09 | Automation + AI-assisted triage (capstone) | Active Response + Claude API | - | - | Planned |
+| 09 | [Automation + AI-assisted triage (capstone)](Lab09-AI-Assisted-Triage.md) | Active Response + Claude API | consumes 100411 | - | **In progress** |
 
 Custom detection rules are namespaced at **100400+**. The rule IDs have drifted
 from the original plan because Labs 04 and 05 each needed two rules rather than
@@ -62,7 +62,10 @@ In progress - Labs 01 (brute force, 100400), 02 (suspicious/admin logon,
 scheduled task, 100403/100404), 05 (PowerShell download cradle,
 100405/100406), 06 (event log cleared, 100407), 07 (Defender tampering,
 100408/100409/100410) and 08 (ransomware recovery inhibition, 100411) complete
-and verified firing on a live Windows 11 endpoint. Lab 09 (capstone) planned.
+and verified firing on a live Windows 11 endpoint. Lab 09 (capstone) in progress
+- the AI-enrichment pipeline is built and verified end-to-end in mock mode
+(custom integration routing 100411 alerts to a triage script); the live-LLM
+backend and the Active Response containment half remain to be enabled.
 
 Defects in the **shipped** Wazuh ruleset documented along the way:
 
