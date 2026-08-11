@@ -22,7 +22,7 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 | # | Lab | Sysmon EID | MITRE | Custom Rule | Status |
 |---|---|---|---|---|---|
 | 01 | [Sysmon deployment, config audit, ingestion](Lab01-Sysmon-Deployment.md) | 1, 3, 13, 22 | T1562.001 (closing test) | - | **Complete** |
-| 02 | LSASS credential access | 10 | T1003.001 | 100500 | Planned |
+| 02 | [LSASS credential access](Lab02-LSASS-Credential-Access.md) | 10 | T1003.001 | 100500 | **Complete** |
 | 03 | Suspicious parent-child / LOLBin | 1 | T1059, T1218 | 100501 | Planned |
 | 04 | DLL sideloading and code-signing telemetry | 7 | T1574.002 | 100502 | Planned |
 | 05 | C2 beacon: network and DNS | 3, 22 | T1071.001, T1071.004 | 100503 | Planned |
@@ -58,12 +58,22 @@ be disabled when the module ends.**
 - Notes, limitations, and lessons learned
 
 ## Status
-In progress - Lab 01 complete. Sysmon v15.21 is deployed and verified end-to-end
-on the live Windows 11 endpoint, with the signature checked before execution, the
-config audited before trust, and an idle volume baseline (0.7 events/min)
-measured before ingestion was enabled on a memory-constrained manager.
+In progress - Labs 01 and 02 complete. Sysmon v15.21 is deployed and verified
+end-to-end on the live Windows 11 endpoint, and the first credential-access
+detection (rule 100500, T1003.001) is built and confirmed firing.
 
-Findings so far, all from Lab 01:
+Lab 02 headline: the shipped LSASS rule (92900) is both **noisy** - it
+false-positives on Windows Defender's own `MsMpEng.exe` because its access-mask
+regex is unanchored and matches `0x1010` inside Defender's benign `0x101000` -
+and **blind** - it evades `0x1fffff` (full access, what ProcDump/comsvcs request)
+because that mask is not in its allow-list. The endpoint's **LSASS PPL** and
+**Defender behavioural detection** each block classic dumping before it reaches
+the SIEM, making rule 92900 a backstop against a PPL bypass rather than a
+frontline control. Rule 100500 (level 13) fixes the three shipped defects, was
+tuned against its own false positive on `MRT.exe`, and confirmed the Lab 01
+sibling-precedence hypothesis (higher-level rule wins a shared-event race).
+
+Findings so far, from Lab 01:
 
 - **Rule 92007 is shadowed by rule 92027.** Wazuh's shipped `Set-MpPreference`
   detection chain (92007 -> 92008, level 12, T1562.001) loses the first-match race
