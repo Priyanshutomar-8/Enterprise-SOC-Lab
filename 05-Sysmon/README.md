@@ -23,7 +23,7 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 |---|---|---|---|---|---|
 | 01 | [Sysmon deployment, config audit, ingestion](Lab01-Sysmon-Deployment.md) | 1, 3, 13, 22 | T1562.001 (closing test) | - | **Complete** |
 | 02 | [LSASS credential access](Lab02-LSASS-Credential-Access.md) | 10 | T1003.001 | 100500 | **Complete** |
-| 03 | Suspicious parent-child / LOLBin | 1 | T1059, T1218 | 100501 | Planned |
+| 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218, T1059 | 100501 | **Complete** |
 | 04 | DLL sideloading and code-signing telemetry | 7 | T1574.002 | 100502 | Planned |
 | 05 | C2 beacon: network and DNS | 3, 22 | T1071.001, T1071.004 | 100503 | Planned |
 | 06 | Sysmon tampering and alternate data streams | 4, 15 | T1562.001, T1564.004 | 100504 | Planned |
@@ -58,9 +58,22 @@ be disabled when the module ends.**
 - Notes, limitations, and lessons learned
 
 ## Status
-In progress - Labs 01 and 02 complete. Sysmon v15.21 is deployed and verified
-end-to-end on the live Windows 11 endpoint, and the first credential-access
-detection (rule 100500, T1003.001) is built and confirmed firing.
+In progress - Labs 01, 02 and 03 complete. Sysmon v15.21 is deployed and verified
+end-to-end on the live Windows 11 endpoint, and the first two custom detections
+(100500 credential access, 100501 LOLBin proxy execution) are built and confirmed
+firing.
+
+Lab 03 headline: the shipped ruleset has **no `regsvr32` coverage at all**, catches
+`mshta` **only under an Office parent** (rule 92047), and covers only narrow
+`rundll32` cases. Rule 100501 (level 12) keys on `originalFileName` plus a
+remote/scriptlet command-line indicator - catching Squiblydoo and standalone
+`mshta` regardless of parent, while benign LOLBin use stays at the generic level-3
+rule 67027. The endpoint's **AMSI** and **Defender** each blocked a *different*
+variant before the SIEM saw it (the `.sct` authoring as `Backdoor:JS/Relvelshe.A`,
+the remote scriptlet as `Trojan:Win32/Powemet.A!attk`), making the rule a backstop
+for the quieter forms that slip past prevention. `logall_json` is currently
+**disabled** (it starved the manager on restart and is not needed to alert on a
+level-12 rule) and must be re-enabled when Lab 04 begins.
 
 Lab 02 headline: the shipped LSASS rule (92900) is both **noisy** - it
 false-positives on Windows Defender's own `MsMpEng.exe` because its access-mask
