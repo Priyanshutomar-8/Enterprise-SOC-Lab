@@ -127,7 +127,7 @@ decides whether a technique is visible at all.
 | ProcessCreate | 1 | exclude | Broad coverage. Fine. |
 | NetworkConnect | 3 | both | Filtered but present. |
 | DriverLoad | 6 | exclude | Present. |
-| **ImageLoad** | **7** | **include** | **Allow-list of a few known-abused DLLs. A sideloaded DLL will not match - Lab 04 needs a config amendment.** |
+| **ImageLoad** | **7** | **include, EMPTY** | **Effectively disabled - an empty include logs nothing (corrected during Lab 04; source v74 ships no entries here). A sideloaded DLL is invisible until Lab 04's config amendment.** |
 | CreateRemoteThread | 8 | exclude | Present. |
 | **ProcessAccess** | **10** | **include, EMPTY** | **Effectively disabled - Lab 02 needs a config amendment.** |
 | RegistryEvent | 12/13/14 | both | Present. |

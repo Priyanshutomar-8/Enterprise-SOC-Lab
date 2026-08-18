@@ -24,7 +24,7 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 | 01 | [Sysmon deployment, config audit, ingestion](Lab01-Sysmon-Deployment.md) | 1, 3, 13, 22 | T1562.001 (closing test) | - | **Complete** |
 | 02 | [LSASS credential access](Lab02-LSASS-Credential-Access.md) | 10 | T1003.001 | 100500 | **Complete** |
 | 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218, T1059 | 100501 | **Complete** |
-| 04 | DLL sideloading and code-signing telemetry | 7 | T1574.002 | 100502 | Planned |
+| 04 | [DLL side-loading and code-signing telemetry](Lab04-DLL-Sideloading.md) | 7 | T1574.002 | 100502 | **Complete** |
 | 05 | C2 beacon: network and DNS | 3, 22 | T1071.001, T1071.004 | 100503 | Planned |
 | 06 | Sysmon tampering and alternate data streams | 4, 15 | T1562.001, T1564.004 | 100504 | Planned |
 
@@ -43,11 +43,13 @@ One new channel for the whole module:
 </localfile>
 ```
 
-`logall_json` is enabled for the duration of the module. Most shipped Sysmon
-rules sit at level 0 - decoded but deliberately not alerted - so `alerts.json`
-can look empty while ingestion works perfectly. Archives are the only way to see
-those events and to read the real field names before writing a rule. **This must
-be disabled when the module ends.**
+Most shipped Sysmon rules sit at level 0 - decoded but deliberately not alerted -
+so `alerts.json` can look empty while ingestion works perfectly. `logall_json`
+archives are one way to read the real decoded field names before writing a rule,
+but it was **disabled after Lab 02** when it starved the 3 GB manager on restart.
+Labs 03 and 04 confirmed it is unnecessary for a level-12 custom rule (whose alerts
+land in `alerts.json` directly) - decoded field names can be taken from the shipped
+rules and Wazuh's field-name convention instead. It remains **off**.
 
 ## Each lab includes
 - Objective and MITRE ATT&CK mapping
@@ -58,10 +60,23 @@ be disabled when the module ends.**
 - Notes, limitations, and lessons learned
 
 ## Status
-In progress - Labs 01, 02 and 03 complete. Sysmon v15.21 is deployed and verified
-end-to-end on the live Windows 11 endpoint, and the first two custom detections
-(100500 credential access, 100501 LOLBin proxy execution) are built and confirmed
-firing.
+In progress - Labs 01, 02, 03 and 04 complete. Sysmon v15.21 is deployed and
+verified end-to-end on the live Windows 11 endpoint, and three custom detections
+(100500 credential access, 100501 LOLBin proxy execution, 100502 DLL side-loading)
+are built and confirmed firing.
+
+Lab 04 headline: the shipped ruleset has **no signature-based EID 7 coverage** - its
+seven rules (92151 - 92157) key on named DLLs or the Temp path, never on the
+signature - and the SwiftOnSecurity config ships EID 7 **fully disabled** (an empty
+include). A one-line `Signed=false` amendment (0 events/min idle) plus rule 100502
+(level 12) close the gap: an unsigned DLL loaded by a signed process fires,
+regardless of the DLL's *metadata*, which a sideload forges (the tampered
+`version.dll` still reported `OriginalFileName=VERSION.DLL` / `Company=Microsoft` -
+only `signed`/`signatureStatus` exposed it). The lab also found that **a managed
+.NET DLL load does not raise EID 7** in this config (forcing a native payload) and
+that **UWP/Store DLLs legitimately report `Signed=false`** - a false positive the
+negative control caught and the `WindowsApps` path exclusion fixed. `logall_json`
+was **not needed** for a level-12 rule and remains disabled.
 
 Lab 03 headline: the shipped ruleset has **no `regsvr32` coverage at all**, catches
 `mshta` **only under an Office parent** (rule 92047), and covers only narrow
@@ -71,9 +86,9 @@ remote/scriptlet command-line indicator - catching Squiblydoo and standalone
 rule 67027. The endpoint's **AMSI** and **Defender** each blocked a *different*
 variant before the SIEM saw it (the `.sct` authoring as `Backdoor:JS/Relvelshe.A`,
 the remote scriptlet as `Trojan:Win32/Powemet.A!attk`), making the rule a backstop
-for the quieter forms that slip past prevention. `logall_json` is currently
+for the quieter forms that slip past prevention. `logall_json` is
 **disabled** (it starved the manager on restart and is not needed to alert on a
-level-12 rule) and must be re-enabled when Lab 04 begins.
+level-12 rule); Lab 04 confirmed it is not required and left it off.
 
 Lab 02 headline: the shipped LSASS rule (92900) is both **noisy** - it
 false-positives on Windows Defender's own `MsMpEng.exe` because its access-mask
