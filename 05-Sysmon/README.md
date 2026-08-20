@@ -25,8 +25,8 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 | 02 | [LSASS credential access](Lab02-LSASS-Credential-Access.md) | 10 | T1003.001 | 100500 | **Complete** |
 | 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218, T1059 | 100501 | **Complete** |
 | 04 | [DLL side-loading and code-signing telemetry](Lab04-DLL-Sideloading.md) | 7 | T1574.002 | 100502 | **Complete** |
-| 05 | C2 beacon: network and DNS | 3, 22 | T1071.001, T1071.004 | 100503 | Planned |
-| 06 | Sysmon tampering and alternate data streams | 4, 15 | T1562.001, T1564.004 | 100504 | Planned |
+| 05 | [C2 beacon: network and DNS](Lab05-C2-Beacon-Network-DNS.md) | 3, 22 | T1071.001, T1071.004 | 100503, 100504, 100505 | **Complete** |
+| 06 | Sysmon tampering and alternate data streams | 4, 15 | T1562.001, T1564.004 | 100506 | Planned |
 
 Custom detection rules are namespaced at **100500+**, continuing from Module 04's
 100400 block. Lab 01 writes no rule - it is a deployment and verification lab,
@@ -47,9 +47,9 @@ Most shipped Sysmon rules sit at level 0 - decoded but deliberately not alerted 
 so `alerts.json` can look empty while ingestion works perfectly. `logall_json`
 archives are one way to read the real decoded field names before writing a rule,
 but it was **disabled after Lab 02** when it starved the 3 GB manager on restart.
-Labs 03 and 04 confirmed it is unnecessary for a level-12 custom rule (whose alerts
-land in `alerts.json` directly) - decoded field names can be taken from the shipped
-rules and Wazuh's field-name convention instead. It remains **off**.
+Labs 03, 04 and 05 confirmed it is unnecessary for a level-12 custom rule (whose
+alerts land in `alerts.json` directly) - decoded field names can be taken from the
+shipped rules and Wazuh's field-name convention instead. It remains **off**.
 
 ## Each lab includes
 - Objective and MITRE ATT&CK mapping
@@ -60,10 +60,35 @@ rules and Wazuh's field-name convention instead. It remains **off**.
 - Notes, limitations, and lessons learned
 
 ## Status
-In progress - Labs 01, 02, 03 and 04 complete. Sysmon v15.21 is deployed and
-verified end-to-end on the live Windows 11 endpoint, and three custom detections
-(100500 credential access, 100501 LOLBin proxy execution, 100502 DLL side-loading)
-are built and confirmed firing.
+In progress - Labs 01, 02, 03, 04 and 05 complete. Sysmon v15.21 is deployed and
+verified end-to-end on the live Windows 11 endpoint, and six custom detections
+(100500 credential access, 100501 LOLBin proxy execution, 100502 DLL side-loading,
+100503 DNS tunneling, 100504/100505 C2 beacon) are built and confirmed firing.
+
+**Three of the five detection labs so far found a *total* gap in the shipped
+ruleset** - no `regsvr32` coverage (Lab 03), no signature-based EID 7 coverage
+(Lab 04), no DNS coverage whatsoever (Lab 05). The pattern is not incidental: the
+shipped Sysmon ruleset is built around process creation and barely models the
+network.
+
+Lab 05 headline: the shipped ruleset has **no DNS detection at all** - rule 61650
+is a level-0 group tag and there is no `sysmon_id_22` rule file - and its ten
+Event ID 3 rules key exclusively on **lateral-movement ports** (135, 389, 445,
+3389, 5985); ports 80 and 443 appear nowhere. Worse, shipped rule **92101**
+(`powershell.exe` + tcp, **level 0**) wins the first-match race against any custom
+rule chained with `if_group sysmon_event3`, so a correctly-written, cleanly-validated
+custom beacon rule fired **zero** times against twelve real events until it was
+re-parented to `<if_sid>61605, 92101</if_sid>` - the same workaround Wazuh's own
+rule 92110 uses. Rules 100503 (DNS label length) and 100504/100505 (rate + `same_field`
+on destination IP *and* image) close the gaps; **no Sysmon config amendment was
+needed**, a first for this module, and idle EID 22 volume was 0/5min. The negative
+controls define the ceiling: built-in `curl.exe` is absent from the sensor's
+include-list and produced **zero telemetry** for ten confirmed connections; a
+45-character exfil label under `.msedge.net` was swallowed by the config's
+**public** exclude-list; and a 40-second sleep defeated the beacon rule outright,
+because `frequency`/`timeframe` measures rate, not periodicity. Live OneDrive
+traffic validated `same_field` for free - it is beacon-shaped but rotates
+destinations, and never tripped 100505.
 
 Lab 04 headline: the shipped ruleset has **no signature-based EID 7 coverage** - its
 seven rules (92151 - 92157) key on named DLLs or the Temp path, never on the
