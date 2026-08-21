@@ -26,7 +26,7 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 | 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218, T1059 | 100501 | **Complete** |
 | 04 | [DLL side-loading and code-signing telemetry](Lab04-DLL-Sideloading.md) | 7 | T1574.002 | 100502 | **Complete** |
 | 05 | [C2 beacon: network and DNS](Lab05-C2-Beacon-Network-DNS.md) | 3, 22 | T1071.001, T1071.004 | 100503, 100504, 100505 | **Complete** |
-| 06 | Sysmon tampering and alternate data streams | 4, 15 | T1562.001, T1564.004 | 100506 | Planned |
+| 06 | [Sysmon tampering and alternate data streams](Lab06-Tampering-and-ADS.md) | 4, 15, 7045 | T1562.001, T1564.004 | 100506, 100507, 100508 | **Complete** |
 
 Custom detection rules are namespaced at **100500+**, continuing from Module 04's
 100400 block. Lab 01 writes no rule - it is a deployment and verification lab,
@@ -60,16 +60,36 @@ shipped rules and Wazuh's field-name convention instead. It remains **off**.
 - Notes, limitations, and lessons learned
 
 ## Status
-In progress - Labs 01, 02, 03, 04 and 05 complete. Sysmon v15.21 is deployed and
-verified end-to-end on the live Windows 11 endpoint, and six custom detections
-(100500 credential access, 100501 LOLBin proxy execution, 100502 DLL side-loading,
-100503 DNS tunneling, 100504/100505 C2 beacon) are built and confirmed firing.
+Complete - Labs 01 through 06 all built and verified end-to-end on the live Windows 11
+endpoint. Sysmon v15.21 is deployed, and nine custom detections (100500 credential
+access, 100501 LOLBin proxy execution, 100502 DLL side-loading, 100503 DNS tunneling,
+100504/100505 C2 beacon, 100506 ADS hiding, 100507/100508 Sysmon tampering) are
+confirmed firing.
 
-**Three of the five detection labs so far found a *total* gap in the shipped
-ruleset** - no `regsvr32` coverage (Lab 03), no signature-based EID 7 coverage
-(Lab 04), no DNS coverage whatsoever (Lab 05). The pattern is not incidental: the
-shipped Sysmon ruleset is built around process creation and barely models the
-network.
+**The recurring finding across the module is a defective or incomplete shipped
+ruleset** - a *total* gap in three labs (no `regsvr32` coverage in Lab 03, no
+signature-based EID 7 coverage in Lab 04, no DNS coverage whatsoever in Lab 05), and a
+*severity* gap in Lab 06 (EID 15 and EID 4 decoded at level 0, never alerted). The
+pattern is not incidental: the shipped Sysmon ruleset is built around process creation
+and barely models the network, the sensor's own health, or artifact-hiding.
+
+Lab 06 headline: **the standard advice for detecting Sysmon tampering fails on modern
+Windows.** SCM 7036 (the folklore witness) is never emitted on this Windows 11 build;
+Sysmon's own EID 4 "Stopped" races its Operational-log teardown on uninstall (observed
+both firing and lost); and the two events that would be the best out-of-band
+removal-witnesses - the **FilterManager EID 1 driver-unload** (System channel) and
+**Sysmon EID 16 config-change** (Sysmon channel) - are logged locally but **never reach
+Wazuh**, despite both channels being fully forwarded with no query. `Stop-Service` and
+`sc stop` are additionally **denied outright** (Access Denied) by Sysmon's own service
+DACL. What remains is a best-effort in-band signal (EID 4, rule 100507) and a reliable
+*reinstall* witness (SCM 7045 naming Sysmon, rule 100508); the genuinely tamper-proof
+control is a manager-side source-silence detection, named as future work rather than
+faked as a rule. On the ADS side (rule 100506, T1564.004), the SwiftOnSecurity stream
+include-list watches *scripts* and not *executables*, so a hidden `.ps1` is caught while
+a hidden `.exe` outside a watched path is invisible - and the Zone.Identifier
+mark-of-the-web, the one benign stream that fires EID 15, is tuned out. The transferable
+lesson: **"forwarded" is not "delivered", and folklore expires** - detections copied from
+blog posts must be validated against the platform, not the post.
 
 Lab 05 headline: the shipped ruleset has **no DNS detection at all** - rule 61650
 is a level-0 group tag and there is no `sysmon_id_22` rule file - and its ten
