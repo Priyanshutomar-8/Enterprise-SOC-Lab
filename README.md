@@ -28,7 +28,7 @@ Wazuh SIEM on a three-endpoint virtual network.
 | 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | Complete |
 | 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | In progress |
 | 05 | [Sysmon](./05-Sysmon/) | In progress |
-| 06 | [Active Directory](./06-Active-Directory/) | Planned |
+| 06 | [Active Directory](./06-Active-Directory/) | In progress |
 | 07 | [Threat Hunting](./07-Threat-Hunting/) | Planned |
 | 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | Planned |
 | 09 | [Incident Response](./09-Incident-Response/) | Planned |
