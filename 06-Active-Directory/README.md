@@ -22,7 +22,7 @@ position of a remote attacker holding stolen low-privilege credentials.
 |---|---|---|---|---|---|
 | 01 | [Domain controller deployment, AD auditing, ingestion](Lab01-Domain-Controller-Deployment.md) | 4768, 4769, 4662 (enabled) | - (foundation) | - | **Complete** |
 | 02 | [Kerberoasting](Lab02-Kerberoasting.md) | 4769 | T1558.003 | 100600 | **Complete** |
-| 03 | AS-REP roasting | 4768 | T1558.004 | 100601 | Planned |
+| 03 | [AS-REP roasting](Lab03-AS-REP-Roasting.md) | 4768 | T1558.004 | 100601 | **Complete** |
 | 04 | LDAP / BloodHound reconnaissance | 4662, 1644 | T1087, T1069, T1482 | 100602 | Planned |
 | 05 | DCSync | 4662 | T1003.006 | 100603 | Planned |
 | 06 | Golden Ticket / anomaly correlation (capstone) | 4769 | T1558.001 | 100604 | Planned |
