@@ -23,12 +23,16 @@ position of a remote attacker holding stolen low-privilege credentials.
 | 01 | [Domain controller deployment, AD auditing, ingestion](Lab01-Domain-Controller-Deployment.md) | 4768, 4769, 4662 (enabled) | - (foundation) | - | **Complete** |
 | 02 | [Kerberoasting](Lab02-Kerberoasting.md) | 4769 | T1558.003 | 100600 | **Complete** |
 | 03 | [AS-REP roasting](Lab03-AS-REP-Roasting.md) | 4768 | T1558.004 | 100601 | **Complete** |
-| 04 | LDAP / BloodHound reconnaissance | 4662, 1644 | T1087, T1069, T1482 | 100602 | Planned |
+| 04 | [LDAP / BloodHound reconnaissance](Lab04-LDAP-Reconnaissance.md) | 4662, 1644 | T1087, T1069, T1482 | 100602* | **Investigation (detection gap)** |
 | 05 | DCSync | 4662 | T1003.006 | 100603 | Planned |
 | 06 | Golden Ticket / anomaly correlation (capstone) | 4769 | T1558.001 | 100604 | Planned |
 
 Custom detection rules are namespaced at **100600+**, continuing from Module 05's
 100500 block. Lab 01 writes no rule - it is a deployment and verification lab.
+`100602*` (Lab 04) is **reserved but not firing**: the lab is an honest
+detection-gap investigation - the telemetry (1644) was validated end to end, but
+Wazuh does not route Directory Service eventchannel events into rule evaluation, so
+no rule fires on them. See the lab writeup for the full evidence.
 
 ## Log source
 One new channel for the module (already shipped by the default Windows agent
