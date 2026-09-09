@@ -1,8 +1,13 @@
 # Enterprise SOC Lab
 
-A self-built Security Operations Center (SOC) lab implementing enterprise-grade
-detection engineering, threat hunting, and incident response workflows using
-Wazuh SIEM on a three-endpoint virtual network.
+A self-built Security Operations Center (SOC) lab for detection engineering against
+real attack simulation. Every detection in this repository was deployed to a live
+Wazuh SIEM and then validated by running the attack and confirming the alert fired -
+or by documenting, in writing, why it did not.
+
+Twenty-eight lab writeups across six modules. Thirty-one custom rules. Each lab
+carries its attack commands, the raw telemetry, the rule, the verification, and a
+section on what the detection cannot see.
 
 ---
 
@@ -10,52 +15,85 @@ Wazuh SIEM on a three-endpoint virtual network.
 
 | Component | Details |
 |---|---|
-| SIEM platform | Wazuh 4.14.5 (Manager + Indexer + Dashboard) |
-| Manager node | Ubuntu Server — 192.168.1.79 |
-| Linux endpoint | Kali GNU/Linux 2025.4 — 192.168.1.161 |
-| Windows endpoint | Windows 11 Home — 192.168.1.13 |
-| Hypervisor | Oracle VirtualBox (bridged networking) |
-| Status | Active — all agents reporting |
+| SIEM platform | Wazuh 4.14.6 (Manager + Indexer + Dashboard, all-in-one) |
+| Manager node | Ubuntu Server - 192.168.56.79 |
+| Linux endpoint / attacker | Kali GNU/Linux - agent 001 - 192.168.56.80 |
+| Windows endpoint | Windows 11 Home - agent 002 - 192.168.56.103 |
+| Domain controller | Windows Server 2022 Standard (Desktop Experience) - agent 004 - `DC01`, forest `lab.local` - 192.168.56.10 |
+| Hypervisor | Oracle VirtualBox (host-only network, 192.168.56.0/24) |
+| Endpoint telemetry | Sysmon v15 (SwiftOnSecurity config, amended per lab), Windows Security / PowerShell channels, auditd |
+| Status | Active - all agents reporting |
 
 ---
 
 ## Modules
 
-| # | Module | Status |
-|---|---|---|
-| 01 | [Wazuh Installation](./01-Wazuh-Installation/) | Complete |
-| 02 | [Agent Enrollment](./02-Agent-Enrollment/) | Complete |
-| 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | Complete |
-| 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | In progress |
-| 05 | [Sysmon](./05-Sysmon/) | In progress |
-| 06 | [Active Directory](./06-Active-Directory/) | In progress |
-| 07 | [Threat Hunting](./07-Threat-Hunting/) | Planned |
-| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | Planned |
-| 09 | [Incident Response](./09-Incident-Response/) | Planned |
+| # | Module | Labs | Custom rules | Status |
+|---|---|---|---|---|
+| 01 | [Wazuh Installation](./01-Wazuh-Installation/) | - | - | Complete |
+| 02 | [Agent Enrollment](./02-Agent-Enrollment/) | - | - | Complete |
+| 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | 9 | 100300-100307 | Complete |
+| 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | 9 | 100400-100411 | In progress - Labs 01-08 complete, Lab 09 capstone open |
+| 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
+| 06 | [Active Directory](./06-Active-Directory/) | 4 | 100600-100602 | In progress - Labs 01-04 complete, 05-06 planned |
+| 07 | [Threat Hunting](./07-Threat-Hunting/) | - | - | Planned |
+| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | - | - | Planned |
+| 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
+
+Custom rules are namespaced `100300+`, one block per module. Thirty of the thirty-one
+fire on live attack simulation. `100602` is deliberately published as a **reserved,
+non-firing rule** next to the investigation that explains why - see Module 06 Lab 04.
+
+---
+
+## What this lab found
+
+These are findings from the labs, not claims about the tools:
+
+- **A level-0 rule is a filter, not a no-op.** Wazuh evaluates first-match-wins, so a
+  shipped rule that produces no alert silently consumes events your rule never sees.
+  Two separate modules hit this - rule `92101` on Sysmon network events, rule `92651`
+  on Kerberos service-ticket requests. Wazuh's own ruleset does it to itself elsewhere.
+- **Coverage gaps in the shipped ruleset.** No DNS query rules at all. Egress rules that
+  cover only a handful of internal ports. No rule matching event 4768. No coverage for
+  shadow-copy deletion (T1490). None of these are documented as gaps anywhere.
+- **Forwarded is not delivered.** Sysmon config-change and driver-unload events were
+  written locally and never arrived at the manager, on a channel configured for
+  forwarding. The shipped detection keys on a different, out-of-band signal that does.
+- **Hardening that does not harden.** Forcing AES on an account does not protect it from
+  AS-REP roasting - that setting governs a later Kerberos stage and the RC4 key persists.
+  Documented as a gap in the coverage matrix, not claimed as a control.
+- **Syntax validation is not reachability.** `wazuh-analysisd -t` confirms a rule parses.
+  It says nothing about whether the rule can ever be reached. Only live fire does.
+
+---
+
+## Method
+
+Every lab follows the same shape:
+
+1. Objective, MITRE ATT&CK technique, and the environment it runs in
+2. Attack simulation - the exact commands, run against a live endpoint
+3. Raw telemetry - what the sensor actually emitted, before any rule
+4. Detection logic - the rule, and why it keys on the field it keys on
+5. Verification - the alert firing, plus a negative control where one exists
+6. Tuning - the false positives found and how they were excluded
+7. **Coverage limits** - what this detection cannot see
+
+Step 7 is the one most writeups skip. A detection whose limits you cannot state is
+not a control.
 
 ---
 
 ## Skills demonstrated
 
-- SIEM deployment and multi-endpoint agent management
-- Linux and Windows attack simulation and detection
-- Detection rule writing and tuning
-- MITRE ATT&CK framework mapping
-- Incident response documentation
-- Threat hunting methodology
+- Wazuh SIEM deployment, multi-agent enrollment, and manager troubleshooting
+- Windows, Linux, and Active Directory attack simulation
+- Custom detection rule authoring, chaining, and false-positive tuning
+- Sysmon configuration auditing and telemetry gap analysis
+- Kerberos, LDAP, and domain-controller event analysis
+- MITRE ATT&CK mapping and coverage-matrix documentation
 
 ---
 
-## Each lab includes
-
-- Objective and architecture
-- Attack simulation commands
-- Wazuh alert analysis
-- MITRE ATT&CK mapping
-- Detection screenshots
-- Investigation steps
-- Lessons learned
-
----
-
-*Built and documented by Priyanshu — ongoing project*
+*Built, attacked, and documented by Priyanshu Tomar - ongoing project*
