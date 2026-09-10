@@ -24,7 +24,7 @@ position of a remote attacker holding stolen low-privilege credentials.
 | 02 | [Kerberoasting](Lab02-Kerberoasting.md) | 4769 | T1558.003 | 100600 | **Complete** |
 | 03 | [AS-REP roasting](Lab03-AS-REP-Roasting.md) | 4768 | T1558.004 | 100601 | **Complete** |
 | 04 | [LDAP / BloodHound reconnaissance](Lab04-LDAP-Reconnaissance.md) | 4662, 1644 | T1087, T1069, T1482 | 100602* | **Investigation (detection gap)** |
-| 05 | DCSync | 4662 | T1003.006 | 100603 | Planned |
+| 05 | [DCSync](Lab05-DCSync.md) | 4662 | T1003.006 | 100603 | **Complete** |
 | 06 | Golden Ticket / anomaly correlation (capstone) | 4769 | T1558.001 | 100604 | Planned |
 
 Custom detection rules are namespaced at **100600+**, continuing from Module 05's
