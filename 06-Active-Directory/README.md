@@ -25,7 +25,8 @@ position of a remote attacker holding stolen low-privilege credentials.
 | 03 | [AS-REP roasting](Lab03-AS-REP-Roasting.md) | 4768 | T1558.004 | 100601 | **Complete** |
 | 04 | [LDAP / BloodHound reconnaissance](Lab04-LDAP-Reconnaissance.md) | 4662, 1644 | T1087, T1069, T1482 | 100602* | **Investigation (detection gap)** |
 | 05 | [DCSync](Lab05-DCSync.md) | 4662 | T1003.006 | 100603 | **Complete** |
-| 06 | Golden Ticket / anomaly correlation (capstone) | 4769 | T1558.001 | 100604 | Planned |
+| 06A | [Golden Ticket - detection limits (investigation)](Lab06A-Golden-Ticket-Detection-Limits.md) | 4769, 4768 (by absence) | T1558.001 | - | **Complete** |
+| 06B | [Golden Ticket - pragmatic tripwire](Lab06B-Golden-Ticket-Tripwire.md) | 4769 | T1558.001 | 100604 | **Complete** |
 
 Custom detection rules are namespaced at **100600+**, continuing from Module 05's
 100500 block. Lab 01 writes no rule - it is a deployment and verification lab.
@@ -33,6 +34,15 @@ Custom detection rules are namespaced at **100600+**, continuing from Module 05'
 detection-gap investigation - the telemetry (1644) was validated end to end, but
 Wazuh does not route Directory Service eventchannel events into rule evaluation, so
 no rule fires on them. See the lab writeup for the full evidence.
+
+The capstone is split: **Lab 06A** is an investigation that ships **no rule** - it
+proves a Golden Ticket cannot be detected by a single-event 4769 signature (a
+working ticket is field-identical to legitimate activity, and the true signal, a
+missing 4768, is a stateful absence-correlation Wazuh's stateless engine cannot
+express). **Lab 06B** then builds the honest heuristic that remains, rule **100604**
+(level 10), a tripwire on remote built-in-Administrator service-ticket requests -
+fired on the attack, silent on local housekeeping, and with a *demonstrated* false
+positive on a legitimate remote admin logon.
 
 ## Log source
 One new channel for the module (already shipped by the default Windows agent
