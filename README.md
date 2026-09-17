@@ -36,7 +36,7 @@ section on what the detection cannot see.
 | 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | 9 | 100400-100411 | In progress - Labs 01-08 complete, Lab 09 capstone open |
 | 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
-| 07 | [Threat Hunting](./07-Threat-Hunting/) | 1 | 100700+ (planned) | In progress - Lab 01 (data foundation) complete |
+| 07 | [Threat Hunting](./07-Threat-Hunting/) | 2 | 100700+ (planned) | In progress - Labs 01-02 complete (both hunts, no rule) |
 | 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | - | - | Planned |
 | 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
 
