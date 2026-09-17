@@ -35,14 +35,17 @@ section on what the detection cannot see.
 | 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | 9 | 100300-100307 | Complete |
 | 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | 9 | 100400-100411 | In progress - Labs 01-08 complete, Lab 09 capstone open |
 | 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
-| 06 | [Active Directory](./06-Active-Directory/) | 4 | 100600-100602 | In progress - Labs 01-04 complete, 05-06 planned |
-| 07 | [Threat Hunting](./07-Threat-Hunting/) | - | - | Planned |
+| 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
+| 07 | [Threat Hunting](./07-Threat-Hunting/) | 1 | 100700+ (planned) | In progress - Lab 01 (data foundation) complete |
 | 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | - | - | Planned |
 | 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
 
-Custom rules are namespaced `100300+`, one block per module. Thirty of the thirty-one
-fire on live attack simulation. `100602` is deliberately published as a **reserved,
-non-firing rule** next to the investigation that explains why - see Module 06 Lab 04.
+Custom rules are namespaced `100300+`, one block per module. Nearly all fire on
+live attack simulation. `100602` is deliberately published as a **reserved,
+non-firing rule** next to the investigation that explains why (Module 06 Lab 04),
+and Module 06 Lab 06A / Module 07 Lab 01 are rigorous **investigations that publish
+no rule** - a Golden Ticket's true signal (a missing 4768) and a SIEM's retention
+blind spot are both things a single stateless rule cannot express.
 
 ---
 
