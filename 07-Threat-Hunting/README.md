@@ -22,14 +22,17 @@ raw event archives (`wazuh-archives-*`) that hunting depends on. Hunts run in
 |---|---|---|---|---|---|
 | 01 | [Data Foundation - what can you actually hunt?](Lab01-Data-Foundation.md) | Archive indexing, blind-spot audit, query engine | Data Sources (foundation) | - | **Complete** |
 | 02 | [Golden Ticket anti-join](Lab02-Golden-Ticket-Anti-Join.md) | Hunt the *missing* 4768 an anti-join finds but a rule cannot | T1558.001 | - (hunt) | **Complete** |
-| 03 | Beacon periodicity | Stack-count time gaps between Sysmon EID3 connections | T1071 | 100701 (planned) | Planned |
-| 04 | Hunt-to-detection (capstone) | Promote one hunt to a rule, or document why it must stay a hunt | - | 100702 (planned) | Planned |
+| 03 | [Beacon periodicity](Lab03-Beacon-Periodicity.md) | Interval-variance (CV) hunt that catches a rate-evading slow beacon | T1071.001 | - (hunt) | **Complete** |
+| 04 | Hunt-to-detection (capstone) | Promote one hunt to a rule, or document why it must stay a hunt | - | 100701 (reserved) | Planned |
 
 Custom detection rules are namespaced at **100700+**, continuing from Module 06's
-100600 block. Labs 01 and 02 write **no rule** - Lab 01 is the data foundation, and
-Lab 02's anti-join is a stateful detection Wazuh's engine cannot express as a rule
-(the finding itself). Same pattern as Lab 06A: a rigorous investigation is
-publishable with no rule when it is framed as one. Rules land in Labs 03-04.
+100600 block. Labs 01-03 write **no rule** - Lab 01 is the data foundation, Lab
+02's anti-join and Lab 03's interval-variance are both stateful detections Wazuh's
+stateless, first-match engine cannot express as rules (the finding in each case).
+Same pattern as Lab 06A: a rigorous investigation is publishable with no rule when
+it is framed as one. The rule decision is the **Lab 04 capstone** (rule 100701
+reserved) - whether a hunt promotes to a rule, or is documented as hunt-only in
+Wazuh but rule-able in a stateful engine like Sentinel.
 
 ## Why archives, not alerts
 
