@@ -5,7 +5,7 @@ real attack simulation. Every detection in this repository was deployed to a liv
 Wazuh SIEM and then validated by running the attack and confirming the alert fired -
 or by documenting, in writing, why it did not.
 
-Twenty-eight lab writeups across six modules. Thirty-one custom rules. Each lab
+Thirty-five lab writeups across seven modules. Thirty-four custom rules. Each lab
 carries its attack commands, the raw telemetry, the rule, the verification, and a
 section on what the detection cannot see.
 
@@ -33,17 +33,17 @@ section on what the detection cannot see.
 | 01 | [Wazuh Installation](./01-Wazuh-Installation/) | - | - | Complete |
 | 02 | [Agent Enrollment](./02-Agent-Enrollment/) | - | - | Complete |
 | 03 | [Linux Detection Lab](./03-Linux-Detection-Lab/) | 9 | 100300-100307 | Complete |
-| 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | 9 | 100400-100411 | In progress - Labs 01-08 complete, Lab 09 capstone open |
+| 04 | [Windows Detection Lab](./04-Windows-Detection-Lab/) | 9 | 100400-100411 | Labs 01-08 complete; Lab 09 capstone partial (AI-triage half verified in mock mode, live-LLM leg open) |
 | 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
-| 07 | [Threat Hunting](./07-Threat-Hunting/) | 2 | 100700+ (planned) | In progress - Labs 01-02 complete (both hunts, no rule) |
-| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | - | - | Planned |
+| 07 | [Threat Hunting](./07-Threat-Hunting/) | 4 | 100701 | Complete - Labs 01-04 (Labs 01-03 are hunts, no rule) |
+| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | - | - | In progress - scoping |
 | 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
 
 Custom rules are namespaced `100300+`, one block per module. Nearly all fire on
 live attack simulation. `100602` is deliberately published as a **reserved,
 non-firing rule** next to the investigation that explains why (Module 06 Lab 04),
-and Module 06 Lab 06A / Module 07 Lab 01 are rigorous **investigations that publish
+and Module 06 Lab 06A / Module 07 Labs 01-03 are rigorous **investigations that publish
 no rule** - a Golden Ticket's true signal (a missing 4768) and a SIEM's retention
 blind spot are both things a single stateless rule cannot express.
 
