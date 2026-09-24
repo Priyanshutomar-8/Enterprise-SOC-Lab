@@ -125,7 +125,37 @@ there. The exclusion list covers well-known service identities but not
 and `DWM-1` slipped through even on the workstation. **~98% of 100401's alerts are
 false positives in the current lab.** The rule was correct when tested and broke
 when a new asset type joined; nothing alerted on the rule itself degrading.
-Status downgraded to `fired-with-limit`; fix and regression test carried to Lab 04.
+Status downgraded to `fired-with-limit`.
+
+**Fix deployed.** The exclusion now also negates `$`-suffixed computer accounts
+and the per-session `DWM-n` / `UMFD-n` identities:
+
+```xml
+<field name="win.eventdata.subjectUserName" negate="yes">^SYSTEM$|^LOCAL SERVICE$|^NETWORK SERVICE$|^DWM-\d+$|^UMFD-\d+$|\$$</field>
+```
+
+`\$$` means "ends in a literal `$`" - the same pattern already proven live in
+Module 06's Kerberoasting rule 100600. Deployment was checked with a backup, a
+`diff` showing exactly one changed line, matching md5 on both ends, and
+`wazuh-analysisd -t` before restart.
+
+Two things went wrong on the way, and both were caught before going live:
+
+- The first `sed` over SSH matched nothing - quoting through two shells ate the
+  pattern. The `diff` came back empty, which exposed it.
+- The second attempt stripped the backslashes, producing `^DWM-d+$|...|$$`. A bare
+  `$$` would match **every** username; under `negate` that silences the rule
+  completely - trading 98% false positives for 100% false negatives. The syntax
+  check **passed** on that broken line. Only reading the diff caught it. The fix
+  was to write the line to a file and replace line 113 wholesale, so no escaping
+  was involved.
+
+**Offline replay is not a valid test here.** The 22 September archive holds 367
+`DC01$` and 3 `Administrator` 4672 events. Replayed through `wazuh-logtest`, both
+decode as generic JSON and **neither** reaches the Windows rule chain - including
+the Administrator event that must alert. A tester that is silent on the positive
+case proves nothing about the negative case. The live re-fire (an Administrator
+logon on DC01 must still alert; `DC01$` must not) is carried to Lab 04.
 
 ### Finding - the SIEM claims a cell the lab proved is a gap
 **T1021.001 (RDP)** is lit in the alert view with 6 alerts from shipped rule 92657

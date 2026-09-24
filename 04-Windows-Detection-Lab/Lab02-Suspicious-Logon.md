@@ -83,7 +83,7 @@ Added to `/var/ossec/etc/rules/local_rules.xml`.
   <rule id="100401" level="8">
     <if_sid>60103</if_sid>
     <field name="win.system.eventID">^4672$</field>
-    <field name="win.eventdata.subjectUserName" negate="yes">^SYSTEM$|^LOCAL SERVICE$|^NETWORK SERVICE$</field>
+    <field name="win.eventdata.subjectUserName" negate="yes">^SYSTEM$|^LOCAL SERVICE$|^NETWORK SERVICE$|^DWM-\d+$|^UMFD-\d+$|\$$</field>
     <description>Privileged (admin) logon: special privileges assigned to $(win.eventdata.subjectUserName) [T1078]</description>
     <options>no_full_log</options>
     <mitre><id>T1078</id></mitre>
@@ -161,6 +161,13 @@ subjectUserName: vboxuser
   4672/4624 do not exist without the success + Special Logon subcategories.
 - **`runas` uses the Secondary Logon service.** If it is disabled, the sim
   fails; a test-account + `LogonUser` (valid creds) is the fallback generator.
+- **Regression found and fixed (Module 08 Lab 03).** The original exclusion
+  (`SYSTEM`, `LOCAL SERVICE`, `NETWORK SERVICE`) was correct on this
+  workstation but did not cover `$`-suffixed computer accounts or per-session
+  `DWM-n` / `UMFD-n` identities. Once Module 06 added a domain controller, the
+  DC's own `DC01$` account produced 7,920 of 8,062 alerts (~98% false
+  positives). The exclusion now also negates `^DWM-\d+$`, `^UMFD-\d+$` and
+  `\$$`. A live re-fire against the DC is pending (see Module 08).
 
 ## Lessons learned
 - Match the detection to what the endpoint can actually *prove*. RDP was the
