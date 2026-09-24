@@ -9,10 +9,10 @@ detection verified in Wazuh SIEM and mapped to MITRE ATT&CK.
 |---|---|---|---|---|---|---|
 | 01 | User creation | T1136.001 | 5902 | Level 8 | 1 | Complete |
 | 02 | Failed sudo | T1548.003 | 5503 | Level 5 | 1 | Complete |
-| 03 | Privilege escalation | T1548 | 5402 | Level 5 | 5 | Complete |
+| 03 | Privilege escalation | T1548.003 | 5402 | Level 5 | 5 | Complete |
 | 04 | SSH brute force | T1110.001 | 2502 | Level 10 | 744 | Complete |
 | 05 | File Integrity Monitoring | T1565.001 | 550 | Level 7 | 64 | Complete |
 | 06 | Recon / Discovery detection | T1057 | 100301 | Level 12 | 3 | Complete |
-| 07 | Reverse shell detection | T1059 | 100302 | Level 12 | 2 | Complete |
+| 07 | Reverse shell detection | T1059.004 | 100302 | Level 12 | 2 | Complete |
 | 08 | Cron persistence | T1053.003 | 100305 | Level 10 | 4 | Complete |
 | 09 | Root login detection | T1078.003 | 100306/07 | Level 12 | 3 | Complete |
