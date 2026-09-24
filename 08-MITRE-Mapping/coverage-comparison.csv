@@ -1,0 +1,68 @@
+technique,evidence_status,detections,wazuh_alerts,wazuh_top_rules,category
+T1003.001,fired-with-limit,100500,64,92900(57) 100500(7),agree
+T1003.006,fired,100603,9,100603(9),agree
+T1014,none,,2,521(2),wazuh-only-unvalidated
+T1021,none,,714,5715(714),wazuh-only-unvalidated
+T1021.001,not-deployed,100412,6,92657(6),wazuh-lit-our-rule-undeployed
+T1021.004,none,,78,5710(60) 5760(18),wazuh-only-unvalidated
+T1021.006,none,,6,91823(6),wazuh-only-unvalidated
+T1047,none,,7,60730(6) 60747(1),wazuh-only-unvalidated
+T1048.003,fired-with-limit,100503,10,100503(10),agree
+T1053,none,,72,60228(72),wazuh-only-unvalidated
+T1053.003,fired,100305,11,100305(11),agree
+T1053.005,fired,100404,3,100404(3),agree
+T1055,none,,13,61618(12) 61640(1),wazuh-only-unvalidated
+T1055.003,none,,1,92402(1),wazuh-only-unvalidated
+T1055.012,none,,1,92402(1),wazuh-only-unvalidated
+T1057,fired,100300 100301,148,100300(109) 100301(31) 91815(8),agree
+T1059,none,,40,92200(38) 100501(2),wazuh-parent-of-validated
+T1059.001,fired,100405 100406,188,92066(144) 100405(24) 92027(8) 91823(6) 100406(4) 91837(2),agree
+T1059.003,none,,17,92052(15) 92004(2),wazuh-only-unvalidated
+T1059.004,fired,100302 100303,2,100302(1) 100303(1),agree
+T1059.006,none,,1,92601(1),wazuh-only-unvalidated
+T1069,not-deployed,100602,0,,paper-only
+T1070.001,fired,100407,7,100407(7),agree
+T1070.004,none,,282,92021(207) 751(48) 553(22) 597(5),wazuh-only-unvalidated
+T1071.001,fired,100504 100505 HUNT-BEACON-CV,113,100504(111) 100302(1) 100505(1),agree
+T1071.004,fired-with-limit,100503,10,100503(10),agree
+T1078,fired-with-limit,100401 100412,19712,60106(8418) 100401(8062) 5501(2492) 5715(714) 60118(26),agree
+T1078.002,none,,23,92652(17) 92657(6),wazuh-only-unvalidated
+T1078.003,fired,100306 100307,3,100306(3),agree
+T1082,fired,100300,378,91816(269) 100300(109),agree
+T1083,none,,12,91820(7) 91819(4) 91842(1),wazuh-only-unvalidated
+T1087,not-deployed,100602,96,92031(96),wazuh-lit-our-rule-undeployed
+T1095,fired,100302 100303,0,,evidence-no-alerts
+T1098,fired,100402,23,60109(8) 60110(7) 100402(5) 60111(3),agree
+T1105,fired,100405 100406,287,92205(185) 92200(38) 92213(28) 100405(24) 92203(7) 100406(4) 91811(1),agree
+T1110,none,,14,2502(9) 5712(5),wazuh-parent-of-validated
+T1110.001,fired,2502 5503 100400,158,5503(73) 5710(60) 5760(18) 5557(5) 100400(2),agree
+T1112,none,,2539,750(1206) 594(1004) 752(197) 598(79) 751(48) 597(5),wazuh-only-unvalidated
+T1119,none,,7,91820(7),wazuh-only-unvalidated
+T1136,none,,1,5902(1),wazuh-parent-of-validated
+T1136.001,fired,5902 100402,5,100402(5),agree
+T1218.005,fired,100501,2,100501(2),agree
+T1218.010,fired,100501,2,100501(2),agree
+T1218.011,fired,100501,2,100501(2),agree
+T1482,not-deployed,100602,0,,paper-only
+T1484,none,,19,60154(7) 60160(6) 60170(6),wazuh-only-unvalidated
+T1485,none,,75,751(48) 553(22) 597(5),wazuh-only-unvalidated
+T1489,none,,1157,60669(1156) 60778(1),wazuh-only-unvalidated
+T1490,fired,100411,9,100411(9),agree
+T1529,none,,11,60730(6) 67018(5),wazuh-only-unvalidated
+T1531,none,,57,60122(54) 60111(3),wazuh-only-unvalidated
+T1543.003,fired,100403,171,92307(152) 61138(17) 100403(2),agree
+T1546.011,none,,63,92058(63),wazuh-only-unvalidated
+T1548.003,fired-with-limit,5402,1539,5402(1536) 5403(3),agree
+T1550.002,none,,23,92652(17) 92657(6),wazuh-only-unvalidated
+T1558.001,fired-with-limit,100604 100701 HUNT-GT-ANTIJOIN,6,100604(3) 100701(3),agree
+T1558.003,fired,100600,1,100600(1),agree
+T1558.004,fired,100601,3,100601(3),agree
+T1560,none,,4,91826(4),wazuh-only-unvalidated
+T1562,none,,1,92007(1),wazuh-only-unvalidated
+T1562.001,fired,100408 100409 100410 100507 100508,117,504(50) 506(31) 100410(20) 100409(11) 100508(2) 100408(1) 100507(1) 92008(1),agree
+T1564.004,fired,100506,5,100506(5),agree
+T1565.001,fired,550,2379,750(1206) 594(1004) 550(169),agree
+T1570,none,,281,92217(281),wazuh-only-unvalidated
+T1574.001,none,,465,92219(465),wazuh-only-unvalidated
+T1574.002,fired,100502,1583,100502(1118) 92219(465),agree
+T1574.010,none,,22,92206(22),wazuh-only-unvalidated

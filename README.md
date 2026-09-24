@@ -5,7 +5,7 @@ real attack simulation. Every detection in this repository was deployed to a liv
 Wazuh SIEM and then validated by running the attack and confirming the alert fired -
 or by documenting, in writing, why it did not.
 
-Thirty-seven lab writeups across eight modules. Thirty-four custom rules. Each lab
+Thirty-eight lab writeups across eight modules. Thirty-four custom rules. Each lab
 carries its attack commands, the raw telemetry, the rule, the verification, and a
 section on what the detection cannot see.
 
@@ -37,7 +37,7 @@ section on what the detection cannot see.
 | 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
 | 07 | [Threat Hunting](./07-Threat-Hunting/) | 4 | 100701 | Complete - Labs 01-04 (Labs 01-03 are hunts, no rule) |
-| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 2 | - | In progress - Labs 01-02 complete (inventory, tag audit; no rule) |
+| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 3 | - | In progress - Labs 01-03 complete (inventory, tag audit, coverage map; no rule) |
 | 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
 
 Custom rules are namespaced `100300+`, one block per module. Nearly all fire on

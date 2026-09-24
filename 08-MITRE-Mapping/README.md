@@ -35,7 +35,7 @@ Every detection built or validated in Modules 03-07:
 |---|---|---|---|---|
 | 01 | [Detection inventory](Lab01-Detection-Inventory.md) | Live rules vs published writeups; evidence status per detection | [`detection-inventory.csv`](detection-inventory.csv) | **Complete** |
 | 02 | [Tag audit and corrections](Lab02-Tag-Audit.md) | Wrong, over-broad and missing tags; ID collision; parent/sub normalisation | 3 re-tagged live rules, corrected writeups, `mapped_techniques` column | **Complete** |
-| 03 | Evidence-scored coverage map | ATT&CK Navigator layer coloured by evidence; compared with Wazuh's built-in MITRE view; tactic summary | Navigator layer JSON | Planned |
+| 03 | [Evidence-scored coverage map](Lab03-Coverage-Map.md) | Evidence layer vs the SIEM's own alert view; tactic summary; 100401 regression found | [`layer-evidence.json`](layer-evidence.json), [`layer-wazuh-alerts.json`](layer-wazuh-alerts.json), [`coverage-comparison.csv`](coverage-comparison.csv) | **Complete** |
 | 04 | Detection regression test | Re-fire one attack per technique family against the current manager | Regression matrix | Planned |
 | 05 | Threat-informed gap analysis | Overlay a real ransomware group targeting education/healthcare; rank gaps | Prioritised gap list | Planned |
 
@@ -54,3 +54,16 @@ No custom rules are written in this module - it measures the rules that exist.
 - Normalised count: **36 techniques, 32 backed by a deployed rule** (down from
   38/34 - parent IDs had double-counted).
 - Tag drift between the live manager and the published rules: **0**.
+
+## Lab 03 headline numbers
+- Wazuh's own alert view lights **64** techniques; the evidence view proves **32**.
+  28 lit cells come from shipped rules never exercised by a deliberate attack.
+- Only **7.7%** of 380,938 alerts carry an ATT&CK tag; the hottest cells are
+  logons, registry churn and admin sudo.
+- **100401 regressed**: ~8,000 alerts, 98% from the DC's `DC01$` machine account
+  after Module 06 added a domain controller.
+- Empty tactics: **Lateral Movement, Collection**; Exfiltration shape-tested only.
+
+Open the layers in ATT&CK Navigator:
+[evidence view](https://mitre-attack.github.io/attack-navigator/#layerURL=https://raw.githubusercontent.com/Priyanshutomar-8/Enterprise-SOC-Lab/main/08-MITRE-Mapping/layer-evidence.json) |
+[Wazuh alert view](https://mitre-attack.github.io/attack-navigator/#layerURL=https://raw.githubusercontent.com/Priyanshutomar-8/Enterprise-SOC-Lab/main/08-MITRE-Mapping/layer-wazuh-alerts.json)
