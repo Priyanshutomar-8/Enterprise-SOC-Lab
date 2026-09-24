@@ -21,7 +21,7 @@ the *successful* privileged access that follows a compromise.
 | Signal | Event | Technique | Testable on this endpoint? |
 |---|---|---|---|
 | **Admin/privileged logon** | 4672 (special privileges assigned) | T1078 | **Yes** - deployed as 100401 |
-| **RDP / RemoteInteractive** | 4624, LogonType **10** | T1021.001 | **No** - Win 11 **Home** cannot host RDP |
+| **RDP / RemoteInteractive** | 4624, LogonType **10** | T1021.001 | **No** - Win 11 **Home** cannot host RDP (reserved as 100412, not deployed) |
 
 **Windows 11 Home has no Remote Desktop *host*** (RDP server is Pro/Enterprise
 only), so a genuine `LogonType 10` cannot be produced on this endpoint. Per the
@@ -30,8 +30,8 @@ than a documented gap* - the RDP rule is **written up but not deployed**, rather
 than shipped untested. It belongs on a Pro/Server endpoint:
 
 ```xml
-<!-- Deploy on a Pro/Server RDP host, NOT verifiable on Win 11 Home -->
-<rule id="100401" level="10">
+<!-- Deploy on a Pro/Server RDP host, NOT verifiable on Win 11 Home. Reserved ID 100412 (was 100401 - collided with the deployed privileged-logon rule; corrected in Module 08 Lab 02) -->
+<rule id="100412" level="10">
   <if_sid>60106</if_sid>
   <field name="win.eventdata.logonType">^10$</field>
   <description>RDP / RemoteInteractive logon for $(win.eventdata.targetUserName) from $(win.eventdata.ipAddress) [T1021.001]</description>

@@ -10,6 +10,7 @@ failed sudo attempts and verify Wazuh detects the authentication failures.
 | Tactic | Privilege Escalation |
 | Technique | T1548.003 - Sudo and Sudo Caching |
 | Secondary | T1078 - Valid Accounts |
+| Detection note | Detected by shipped rule **5503**, which fires on *any* PAM authentication failure and is tagged **T1110.001** by Wazuh - it is not sudo-specific. T1548.003 is the scenario; the rule does not prove it (Module 08 Lab 01/02). |
 | Reference | https://attack.mitre.org/techniques/T1548/003/ |
 
 ## Why this matters

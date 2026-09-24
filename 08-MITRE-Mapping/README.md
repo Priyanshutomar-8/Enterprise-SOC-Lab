@@ -34,7 +34,7 @@ Every detection built or validated in Modules 03-07:
 | # | Lab | Focus | Output | Status |
 |---|---|---|---|---|
 | 01 | [Detection inventory](Lab01-Detection-Inventory.md) | Live rules vs published writeups; evidence status per detection | [`detection-inventory.csv`](detection-inventory.csv) | **Complete** |
-| 02 | Tag audit and corrections | Fix ID collision, missing/over-broad tags, parent/sub double counting | Corrected live rules + writeups | Planned |
+| 02 | [Tag audit and corrections](Lab02-Tag-Audit.md) | Wrong, over-broad and missing tags; ID collision; parent/sub normalisation | 3 re-tagged live rules, corrected writeups, `mapped_techniques` column | **Complete** |
 | 03 | Evidence-scored coverage map | ATT&CK Navigator layer coloured by evidence; compared with Wazuh's built-in MITRE view; tactic summary | Navigator layer JSON | Planned |
 | 04 | Detection regression test | Re-fire one attack per technique family against the current manager | Regression matrix | Planned |
 | 05 | Threat-informed gap analysis | Overlay a real ransomware group targeting education/healthcare; rank gaps | Prioritised gap list | Planned |
@@ -46,3 +46,11 @@ No custom rules are written in this module - it measures the rules that exist.
 - Evidence: 30 `fired`, 8 `fired-with-limit`, 2 `hunt-only`, 2 `not-deployed`.
 - Documentation drifted from the live manager in **3 of 34** custom rules.
 - Four techniques exist only on paper: T1021.001, T1087, T1069, T1482.
+
+## Lab 02 headline numbers
+- 3 live rules re-tagged: 100302 and 100303 -> T1095 (raw TCP shell, not Web
+  Protocols); 100501 drops a bare T1059 parent tag.
+- Undeployed RDP rule renumbered 100401 -> reserved **100412** (ID collision).
+- Normalised count: **36 techniques, 32 backed by a deployed rule** (down from
+  38/34 - parent IDs had double-counted).
+- Tag drift between the live manager and the published rules: **0**.

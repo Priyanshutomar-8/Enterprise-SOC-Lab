@@ -23,7 +23,7 @@ them is part of the work in Labs 02 and 04 rather than a workaround.
 |---|---|---|---|---|---|
 | 01 | [Sysmon deployment, config audit, ingestion](Lab01-Sysmon-Deployment.md) | 1, 3, 13, 22 | T1562.001 (closing test) | - | **Complete** |
 | 02 | [LSASS credential access](Lab02-LSASS-Credential-Access.md) | 10 | T1003.001 | 100500 | **Complete** |
-| 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218, T1059 | 100501 | **Complete** |
+| 03 | [LOLBin proxy execution (Squiblydoo / mshta / rundll32)](Lab03-LOLBin-Proxy-Execution.md) | 1 | T1218 | 100501 | **Complete** |
 | 04 | [DLL side-loading and code-signing telemetry](Lab04-DLL-Sideloading.md) | 7 | T1574.002 | 100502 | **Complete** |
 | 05 | [C2 beacon: network and DNS](Lab05-C2-Beacon-Network-DNS.md) | 3, 22 | T1071.001, T1071.004 | 100503, 100504, 100505 | **Complete** |
 | 06 | [Sysmon tampering and alternate data streams](Lab06-Tampering-and-ADS.md) | 4, 15, 7045 | T1562.001, T1564.004 | 100506, 100507, 100508 | **Complete** |

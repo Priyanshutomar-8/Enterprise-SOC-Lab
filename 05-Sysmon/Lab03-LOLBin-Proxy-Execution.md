@@ -174,7 +174,6 @@ Added to `/var/ossec/etc/rules/local_rules.xml`.
       <id>T1218.010</id>
       <id>T1218.005</id>
       <id>T1218.011</id>
-      <id>T1059</id>
     </mitre>
   </rule>
 </group>

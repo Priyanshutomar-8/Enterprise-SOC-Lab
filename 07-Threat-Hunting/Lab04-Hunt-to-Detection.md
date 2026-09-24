@@ -48,6 +48,7 @@ operator**. So the closest promotable rule is a single-event proxy - fire on a
   <field name="win.eventdata.targetUserName" type="pcre2">(?i)^svc-sql@</field>
   <field name="win.eventdata.ipAddress" negate="yes" type="pcre2">^(::1|127\.0\.0\.1|::ffff:127\.0\.0\.1)$</field>
   <description>Golden Ticket proxy: service account svc-sql requested a Kerberos service ticket ... [heuristic proxy - cannot confirm forgery, T1558.001]</description>
+  <mitre><id>T1558.001</id></mitre>
 </rule>
 ```
 

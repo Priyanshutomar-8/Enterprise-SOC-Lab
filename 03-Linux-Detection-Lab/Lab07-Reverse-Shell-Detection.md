@@ -12,7 +12,7 @@ in a SOC: it is the moment a foothold becomes interactive control.
 | Tactic | Execution |
 | Technique | T1059 - Command and Scripting Interpreter |
 | Sub-techniques | T1059.004 (Unix Shell), T1059.006 (Python) |
-| Related | T1071.001 - Application Layer Protocol |
+| Related | T1095 - Non-Application Layer Protocol (raw TCP shell) |
 | Reference | https://attack.mitre.org/techniques/T1059/ |
 
 ## Detection philosophy - contrast with Lab 06
@@ -84,7 +84,7 @@ Added to `/var/ossec/etc/rules/local_rules.xml`.
     <field name="audit.command">^ncat$|^nc$|^nc.traditional$|^nc.openbsd$</field>
     <field name="audit.execve.a1">^-e$|^-c$</field>
     <description>Reverse shell: netcat exec ($(audit.command) $(audit.execve.a1) $(audit.execve.a2)) by auid $(audit.auid)</description>
-    <mitre><id>T1059.004</id><id>T1071.001</id></mitre>
+    <mitre><id>T1059.004</id><id>T1095</id></mitre>
   </rule>
 
   <!-- socat EXEC/SYSTEM to shell -->
@@ -93,7 +93,7 @@ Added to `/var/ossec/etc/rules/local_rules.xml`.
     <field name="audit.command">^socat$</field>
     <field name="audit.execve.a2">^EXEC:|^SYSTEM:|^exec:|^system:</field>
     <description>Reverse shell: socat exec ($(audit.execve.a1) $(audit.execve.a2)) by auid $(audit.auid)</description>
-    <mitre><id>T1059.004</id></mitre>
+    <mitre><id>T1059.004</id><id>T1095</id></mitre>
   </rule>
 
 </group>
