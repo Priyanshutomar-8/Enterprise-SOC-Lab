@@ -36,7 +36,7 @@ Every detection built or validated in Modules 03-07:
 | 01 | [Detection inventory](Lab01-Detection-Inventory.md) | Live rules vs published writeups; evidence status per detection | [`detection-inventory.csv`](detection-inventory.csv) | **Complete** |
 | 02 | [Tag audit and corrections](Lab02-Tag-Audit.md) | Wrong, over-broad and missing tags; ID collision; parent/sub normalisation | 3 re-tagged live rules, corrected writeups, `mapped_techniques` column | **Complete** |
 | 03 | [Evidence-scored coverage map](Lab03-Coverage-Map.md) | Evidence layer vs the SIEM's own alert view; tactic summary; 100401 regression found | [`layer-evidence.json`](layer-evidence.json), [`layer-wazuh-alerts.json`](layer-wazuh-alerts.json), [`coverage-comparison.csv`](coverage-comparison.csv) | **Complete** |
-| 04 | Detection regression test | Re-fire one attack per technique family against the current manager | Regression matrix | Planned |
+| 04 | [Regression test](Lab04-Regression-Test.md) | 100401 fix re-verified live; alert-history health check of all 33 rules; per-family re-fire matrix defined (not run - host memory) | [`rule-health.csv`](rule-health.csv) | **Complete** (re-fire matrix open) |
 | 05 | Threat-informed gap analysis | Overlay a real ransomware group targeting education/healthcare; rank gaps | Prioritised gap list | Planned |
 
 No custom rules are written in this module - it measures the rules that exist.
@@ -67,3 +67,13 @@ No custom rules are written in this module - it measures the rules that exist.
 Open the layers in ATT&CK Navigator:
 [evidence view](https://mitre-attack.github.io/attack-navigator/#layerURL=https://raw.githubusercontent.com/Priyanshutomar-8/Enterprise-SOC-Lab/main/08-MITRE-Mapping/layer-evidence.json) |
 [Wazuh alert view](https://mitre-attack.github.io/attack-navigator/#layerURL=https://raw.githubusercontent.com/Priyanshutomar-8/Enterprise-SOC-Lab/main/08-MITRE-Mapping/layer-wazuh-alerts.json)
+
+## Lab 04 headline numbers
+- **100401 fix verified live:** 75 `DC01$` logons -> 0 alerts; `LAB\Administrator`
+  console logon -> 1 alert.
+- **Second noise regression found:** 100502 at 250-416 alerts/week from unsigned
+  .NET native images (`mscorsvw.exe`) - `fired-with-limit`.
+- **100307 has no alert on record anywhere** despite being documented as verified -
+  new status `unverified`.
+- Evidence: 28 `fired`, 9 `fired-with-limit`, 1 `unverified`, 2 `hunt-only`,
+  2 `not-deployed`. Technique coverage unchanged at 32 proven.

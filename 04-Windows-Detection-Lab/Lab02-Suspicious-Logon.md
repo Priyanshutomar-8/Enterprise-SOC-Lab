@@ -167,7 +167,8 @@ subjectUserName: vboxuser
   `DWM-n` / `UMFD-n` identities. Once Module 06 added a domain controller, the
   DC's own `DC01$` account produced 7,920 of 8,062 alerts (~98% false
   positives). The exclusion now also negates `^DWM-\d+$`, `^UMFD-\d+$` and
-  `\$$`. A live re-fire against the DC is pending (see Module 08).
+  `\$$`. Re-verified live on DC01 (Module 08 Lab 04): 75 `DC01$` logons produced
+  0 alerts; a `LAB\Administrator` console logon fired 100401 at level 8.
 
 ## Lessons learned
 - Match the detection to what the endpoint can actually *prove*. RDP was the

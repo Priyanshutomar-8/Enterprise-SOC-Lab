@@ -12,11 +12,12 @@ BEGIN {
   # Primary ATT&CK tactics for every technique in the evidence map
   split("T1003.001=credential-access T1003.006=credential-access T1021.001=lateral-movement T1048.003=exfiltration T1053.003=execution;persistence;privilege-escalation T1053.005=execution;persistence;privilege-escalation T1057=discovery T1059.001=execution T1059.004=execution T1069=discovery T1070.001=defense-evasion T1071.001=command-and-control T1071.004=command-and-control T1078=initial-access;persistence;privilege-escalation;defense-evasion T1078.003=initial-access;persistence;privilege-escalation;defense-evasion T1082=discovery T1087=discovery T1095=command-and-control T1098=persistence;privilege-escalation T1105=command-and-control T1110.001=credential-access T1136.001=persistence T1218.005=defense-evasion T1218.010=defense-evasion T1218.011=defense-evasion T1482=discovery T1490=impact T1543.003=persistence;privilege-escalation T1548.003=privilege-escalation;defense-evasion T1558.001=credential-access T1558.003=credential-access T1558.004=credential-access T1562.001=defense-evasion T1564.004=defense-evasion T1565.001=impact T1574.002=persistence;privilege-escalation;defense-evasion", m, " ")
   for (i in m) { split(m[i], kv, "="); tac[kv[1]] = kv[2] }
-  rank["fired"]=4; rank["fired-with-limit"]=3; rank["hunt-only"]=2; rank["not-deployed"]=1
-  name[4]="fired"; name[3]="fired-with-limit"; name[2]="hunt-only"; name[1]="not-deployed"
-  color[4]="#2e7d32"; color[3]="#f9a825"; color[2]="#1e88e5"; color[1]="#9e9e9e"
+  # unverified = deployed, but no alert on record proves it ever fired (Lab 04)
+  rank["fired"]=5; rank["fired-with-limit"]=4; rank["unverified"]=3; rank["hunt-only"]=2; rank["not-deployed"]=1
+  name[5]="fired"; name[4]="fired-with-limit"; name[3]="unverified"; name[2]="hunt-only"; name[1]="not-deployed"
+  color[5]="#2e7d32"; color[4]="#f9a825"; color[3]="#ef6c00"; color[2]="#1e88e5"; color[1]="#9e9e9e"
 }
-{ sub(/$/, "") }
+{ sub(/\r$/, "") }
 FNR==1 { next }
 FILENAME ~ /detection-inventory/ {
   n = split($8, ta, ";")
@@ -37,8 +38,9 @@ END {
   se = ""; sw = ""
   for (t in all) {
     b = best[t] + 0; c = cnt[t] + 0
-    if (b >= 3 && c > 0) cat = "agree"
-    else if (b >= 3) cat = "evidence-no-alerts"
+    if (b >= 4 && c > 0) cat = "agree"
+    else if (b >= 4) cat = "evidence-no-alerts"
+    else if (b == 3) cat = "unverified"
     else if (b == 2) cat = "hunt-only"
     else if (b == 1 && c > 0) cat = "wazuh-lit-our-rule-undeployed"
     else if (b == 1) cat = "paper-only"
@@ -48,14 +50,14 @@ END {
     summary[cat]++
     if (b) {
       printf "%s{\"techniqueID\":\"%s\",\"color\":\"%s\",\"comment\":\"%s: %s\",\"enabled\":true,\"showSubtechniques\":true}", se, t, color[b], name[b], dets[t] > ev; se = ","
-      if (b >= 3) { ntac = split(tac[t], tt, ";"); for (k = 1; k <= ntac; k++) { tc[tt[k] "|" name[b]]++; tacs[tt[k]] = 1 } }
+      if (b >= 4) { ntac = split(tac[t], tt, ";"); for (k = 1; k <= ntac; k++) { tc[tt[k] "|" name[b]]++; tacs[tt[k]] = 1 } }
     }
     if (c > 0) {
       s = (c >= 10000 ? 5 : c >= 1000 ? 4 : c >= 100 ? 3 : c >= 10 ? 2 : 1)
       printf "%s{\"techniqueID\":\"%s\",\"score\":%d,\"comment\":\"%d alerts: %s\",\"enabled\":true,\"showSubtechniques\":true}", sw, t, s, c, rules[t] > wz; sw = ","
     }
   }
-  printf "],\"legendItems\":[{\"label\":\"Fired in live test\",\"color\":\"#2e7d32\"},{\"label\":\"Fires with documented limit\",\"color\":\"#f9a825\"},{\"label\":\"Hunt only\",\"color\":\"#1e88e5\"},{\"label\":\"Written, not deployed\",\"color\":\"#9e9e9e\"}]}\n" > ev
+  printf "],\"legendItems\":[{\"label\":\"Fired in live test\",\"color\":\"#2e7d32\"},{\"label\":\"Fires with documented limit\",\"color\":\"#f9a825\"},{\"label\":\"Deployed, no alert on record\",\"color\":\"#ef6c00\"},{\"label\":\"Hunt only\",\"color\":\"#1e88e5\"},{\"label\":\"Written, not deployed\",\"color\":\"#9e9e9e\"}]}\n" > ev
   printf "]}\n" > wz
   print "== categories"; for (k in summary) printf "%-32s %d\n", k, summary[k]
   print "== techniques per tactic (deployed evidence only)"

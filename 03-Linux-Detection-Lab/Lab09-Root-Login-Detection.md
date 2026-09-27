@@ -200,3 +200,10 @@ live events: `sudo su -` produced a `su-l` root session (100306), and a direct
 `ssh root@localhost` produced an `sshd-session` root login (100307). Everyday
 `sudo` commands are excluded by design. Surfaced a real hardening finding on the
 endpoint: `PermitRootLogin yes`.
+
+**Evidence audit (Module 08 Lab 04, 2026-09-27):** 100306 has 3 alerts on record
+from 2026-07-27. **100307 has none** - not in the indexer and not in the on-disk
+alert logs for any day since July. The 100307 claim above is therefore
+**unverified** until re-fired. The manager's `sshd` is now at Ubuntu's default
+`PermitRootLogin prohibit-password`, so a re-fire needs key-based root login. See
+[Module 08 Lab 04](../08-MITRE-Mapping/Lab04-Regression-Test.md).
