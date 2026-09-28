@@ -38,7 +38,7 @@ section on what the detection cannot see.
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
 | 07 | [Threat Hunting](./07-Threat-Hunting/) | 4 | 100701 | Complete - Labs 01-04 (Labs 01-03 are hunts, no rule) |
 | 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 5 | - | Complete - Labs 01-05 (inventory, tag audit, coverage map, regression, INC Ransom gap analysis; no rule) |
-| 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
+| 09 | [Incident Response](./09-Incident-Response/) | 1 | 100900+ | In progress - Lab 01 (IR foundation and plan; no rule) |
 
 Custom rules are namespaced `100300+`, one block per module. Nearly all fire on
 live attack simulation. `100602` is deliberately published as a **reserved,
