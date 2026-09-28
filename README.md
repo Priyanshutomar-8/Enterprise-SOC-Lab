@@ -37,7 +37,7 @@ section on what the detection cannot see.
 | 05 | [Sysmon](./05-Sysmon/) | 6 | 100500-100508 | Complete |
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
 | 07 | [Threat Hunting](./07-Threat-Hunting/) | 4 | 100701 | Complete - Labs 01-04 (Labs 01-03 are hunts, no rule) |
-| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 4 | - | In progress - Labs 01-04 complete (inventory, tag audit, coverage map, regression; no rule) |
+| 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 5 | - | Complete - Labs 01-05 (inventory, tag audit, coverage map, regression, INC Ransom gap analysis; no rule) |
 | 09 | [Incident Response](./09-Incident-Response/) | - | - | Planned |
 
 Custom rules are namespaced `100300+`, one block per module. Nearly all fire on

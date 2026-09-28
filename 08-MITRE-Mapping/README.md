@@ -37,7 +37,7 @@ Every detection built or validated in Modules 03-07:
 | 02 | [Tag audit and corrections](Lab02-Tag-Audit.md) | Wrong, over-broad and missing tags; ID collision; parent/sub normalisation | 3 re-tagged live rules, corrected writeups, `mapped_techniques` column | **Complete** |
 | 03 | [Evidence-scored coverage map](Lab03-Coverage-Map.md) | Evidence layer vs the SIEM's own alert view; tactic summary; 100401 regression found | [`layer-evidence.json`](layer-evidence.json), [`layer-wazuh-alerts.json`](layer-wazuh-alerts.json), [`coverage-comparison.csv`](coverage-comparison.csv) | **Complete** |
 | 04 | [Regression test](Lab04-Regression-Test.md) | 100401 fix re-verified live; alert-history health check of all 33 rules; per-family re-fire matrix defined (not run - host memory) | [`rule-health.csv`](rule-health.csv) | **Complete** (re-fire matrix open) |
-| 05 | Threat-informed gap analysis | Overlay a real ransomware group targeting education/healthcare; rank gaps | Prioritised gap list | Planned |
+| 05 | [Threat-informed gap analysis](Lab05-Threat-Informed-Gaps.md) | INC Ransom (G1032) overlaid at procedure level; ATT&CK v17->v19 drift; ranked gaps | [`adversary-overlay-g1032.csv`](adversary-overlay-g1032.csv), [`layer-g1032-overlay.json`](layer-g1032-overlay.json) | **Complete** |
 
 No custom rules are written in this module - it measures the rules that exist.
 
@@ -77,3 +77,14 @@ Open the layers in ATT&CK Navigator:
   new status `unverified`.
 - Evidence: 28 `fired`, 9 `fired-with-limit`, 1 `unverified`, 2 `hunt-only`,
   2 `not-deployed`. Technique coverage unchanged at 32 proven.
+
+## Lab 05 headline numbers
+- INC Ransom (G1032, targets education and healthcare): 25 cited techniques, 24 in SIEM scope.
+- Technique-ID match: **3** (2 in the raw join - ATT&CK v19 revoked T1562.001 into T1685).
+- **Procedure proven detected: 0.** 1 partial and non-discriminating (T1078), 1 indeterminate
+  (T1105), 1 plausible but untested (T1685 via 100409).
+- 9 of 34 entries in ATT&CK's group layer were empty parent placeholders - filtered out.
+- Build order: **1** PsExec deployment (T1570/T1569.002/T1036.005), **2** exfiltration to MEGA
+  (T1537), **3** context-aware RDP lateral movement (T1021.001).
+
+[INC Ransom overlay in ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/#layerURL=https://raw.githubusercontent.com/Priyanshutomar-8/Enterprise-SOC-Lab/main/08-MITRE-Mapping/layer-g1032-overlay.json)
