@@ -37,7 +37,7 @@ Same lab as Modules 06-08: manager (Wazuh 4.14.6 all-in-one, Ubuntu,
 |---|---|---|---|---|---|
 | 01 | [Incident-response foundation and plan](Lab01-IR-Foundation-and-Plan.md) | - | none | Scenario, phases, evidence and timeline format, what "contain" means for one analyst | **Complete** |
 | 02 | [Deployment detection](Lab02-Deployment-Detection.md) | PsExec cluster (#1: T1570/T1569.002/T1036.005) | **100900** | Triage - one host or many | **Complete** |
-| 03 | Exfiltration detection | Cloud exfiltration (#2: T1537) | new | Scope - what left, when, over which channel | Planned |
+| 03 | [Exfiltration detection](Lab03-Exfiltration-Detection.md) | Cloud exfiltration (#2: T1537) | **100901** | Scope - what left, when, over which channel | **Complete** |
 | 04 | Lateral movement in context | RDP (#3: T1021.001) | deploy 100412 with context | Reconstruct the movement path | Planned |
 | 05 | Capstone - work the whole chain | 02-04 end to end | none new | Full IR narrative: cross-rule timeline, scope, containment, report (paper walkthrough) | Planned |
 
