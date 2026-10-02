@@ -5,7 +5,7 @@ Deploy the Module 08 RDP rule (reserved 100412, never deployed) against a real R
 logon and reconstruct the movement path. The finding reframes the rule entirely: RDP
 is **not** an uncovered gap - the shipped ruleset already detects it - so a blanket
 "any RDP" rule adds nothing. 100412 is redesigned to escalate only the case that
-matters: RDP by the built-in Administrator to a domain controller.
+matters: RDP by the built-in Administrator (tested against a domain controller).
 
 **Benign stand-in.** The "attacker" is an RDP logon from the host (`192.168.56.1`)
 into DC01 using a valid admin account - INC moves with valid accounts (T1078). No
@@ -71,7 +71,14 @@ credential (INC's T1078 valid-accounts pattern). So 100412 was rebuilt to refine
 - **Chains off `92653`** (not 60106): it only evaluates confirmed RDP logons and, as
   the deeper child, now wins - fixing the shadow the same way Labs 02/03 did.
 - **RID 500 only:** fires above 92653's L3 for the built-in Administrator; ordinary
-  named-admin RDP stays at 92653's L3 (not escalated).
+  named-admin RDP stays at 92653's L3 (not escalated) - by design; not live-fired
+  as a negative control.
+- **No target condition - scope is any host, not just DCs.** The rule tests only the
+  account SID; it does not check that the target is a domain controller. It was
+  live-tested only against DC01 (the lab's only RDP-capable agent). A member
+  server's *local* built-in Administrator is also RID 500, so it would likely fire
+  there too (untested). To make the DC scope true by design, add a condition on
+  `win.system.computer` or an agent group of DCs.
 - **Tripwire, not proof:** a lazy admin using the built-in Administrator over RDP
   trips it too (documented FP, cf. Module 06's 100604). The alert flags *review*, not
   confirmed malice.
@@ -107,6 +114,7 @@ MITRE:        T1021.001, T1078.002 (Lateral Movement)
   this. Robustly covering RDP needs a rule anchored on `logonType 10` + RID 500 that
   does not depend on the IP field - a refinement left for later.
 - **Tripwire FP:** legitimate built-in-Administrator RDP trips it (see above).
+- **No DC scoping:** fires on RID-500 RDP to any agent, not only DCs (see design notes).
 - **Blanket RDP is a hunt/correlation problem.** Separating malicious from admin RDP
   needs context the single event lacks (source reputation, account baseline, time,
   target sensitivity) - i.e. hunting, not a single-event rule (Module 07).
@@ -131,8 +139,9 @@ MITRE:        T1021.001, T1078.002 (Lateral Movement)
 ## Result
 - Shipped `92653` already detects RDP (T1021.001); Module 08's "uncovered gap" was
   wrong, and a blanket RDP rule is why 100412 sat undeployed.
-- **100412 (level 12)** redesigned to escalate built-in-Administrator RDP to a DC -
-  privileged lateral movement - live-verified superseding 92653 on the same event.
+- **100412 (level 12)** redesigned to escalate built-in-Administrator RDP -
+  privileged lateral movement - live-verified against DC01, superseding 92653 on the
+  same event. The rule carries no DC condition (see Known limitations).
 - Documented the ipAddress-blank evasion and the tripwire FP honestly.
 
 ## Files
