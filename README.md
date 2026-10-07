@@ -3,9 +3,11 @@
 A self-built Security Operations Center (SOC) lab for detection engineering against
 real attack simulation. Every detection in this repository was deployed to a live
 Wazuh SIEM and then validated by running the attack and confirming the alert fired -
-or by documenting, in writing, why it did not.
+or by documenting, in writing, why it did not. The one declared exception is Module
+10 Lab 01, which proves KQL detection logic on a labeled synthetic dataset; its
+live-fire in Microsoft Sentinel is the next lab.
 
-Thirty-nine lab writeups across eight modules. Thirty-four custom rules. Each lab
+Forty-five lab writeups across ten modules. Thirty-seven custom rules. Each lab
 carries its attack commands, the raw telemetry, the rule, the verification, and a
 section on what the detection cannot see.
 
@@ -38,7 +40,8 @@ section on what the detection cannot see.
 | 06 | [Active Directory](./06-Active-Directory/) | 6 | 100600-100604 | Complete - Labs 01-06 (100602 reserved, non-firing) |
 | 07 | [Threat Hunting](./07-Threat-Hunting/) | 4 | 100701 | Complete - Labs 01-04 (Labs 01-03 are hunts, no rule) |
 | 08 | [MITRE ATT&CK Mapping](./08-MITRE-Mapping/) | 5 | - | Complete - Labs 01-05 (inventory, tag audit, coverage map, regression, INC Ransom gap analysis; no rule) |
-| 09 | [Incident Response](./09-Incident-Response/) | 1 | 100900+ | In progress - Lab 01 (IR foundation and plan; no rule) |
+| 09 | [Incident Response](./09-Incident-Response/) | 5 | 100900-100901, 100412 | Complete - Labs 01-05 (100412 DC-scoped 2026-10-05, positive case verified) |
+| 10 | [Microsoft Sentinel and KQL](./10-Sentinel-KQL/) | 1 | - (KQL analytics) | In progress - Lab 01 (Kerberos detections in KQL on synthetic data; Golden Ticket anti-join) |
 
 Custom rules are namespaced `100300+`, one block per module. Nearly all fire on
 live attack simulation. `100602` is deliberately published as a **reserved,

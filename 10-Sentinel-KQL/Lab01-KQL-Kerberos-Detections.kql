@@ -1,0 +1,42 @@
+// Module 10 Lab 01 - Kerberos detections in KQL (Golden Ticket anti-join, Kerberoast, AS-REP)
+// SYNTHETIC training dataset modeled on Module 06/07 lab events. Runs as-is in any
+// Kusto engine (Azure Data Explorer free cluster used here). In Microsoft Sentinel,
+// delete the datatable block and the real SecurityEvent table is used instead;
+// replace the fixed Now with now().
+let SecurityEvent = datatable(TimeGenerated:datetime, Computer:string, EventID:int, TargetUserName:string, ServiceName:string, TicketEncryptionType:string, PreAuthType:string, IpAddress:string)
+[
+ datetime(2026-10-06 23:00), "DC01.lab.local", 4768, "night-shift",          "krbtgt",  "0x12", "2", "192.168.56.21",
+ datetime(2026-10-07 08:00), "DC01.lab.local", 4768, "svc-sql",              "krbtgt",  "0x12", "2", "192.168.56.20",
+ datetime(2026-10-07 08:01), "DC01.lab.local", 4769, "svc-sql@LAB.LOCAL",    "DC01$",   "0x12", "",  "192.168.56.20",
+ datetime(2026-10-07 08:10), "DC01.lab.local", 4769, "night-shift@LAB.LOCAL","DC01$",   "0x12", "",  "192.168.56.21",
+ datetime(2026-10-07 09:30), "DC01.lab.local", 4769, "it-admin@LAB.LOCAL",   "DC01$",   "0x12", "",  "192.168.56.30",
+ datetime(2026-10-07 09:58), "DC01.lab.local", 4768, "jdoe",                 "krbtgt",  "0x12", "2", "192.168.56.30",
+ datetime(2026-10-07 10:00), "DC01.lab.local", 4769, "jdoe@LAB.LOCAL",       "svc-sql", "0x17", "",  "192.168.56.30",
+ datetime(2026-10-07 10:05), "DC01.lab.local", 4768, "asrep-user",           "krbtgt",  "0x17", "0", "192.168.56.30"
+];
+let Now = datetime(2026-10-07 11:00);   // Sentinel: now()
+let Window = 4h;                         // alert window = rule frequency
+let TgtLifetime = 10h;                   // default Kerberos TGT lifetime
+let Recent = SecurityEvent
+    | where TimeGenerated between ((Now - Window) .. Now)
+    | extend User = tolower(tostring(split(TargetUserName, "@")[0]));
+// TGT side looks back Window + TgtLifetime so a still-valid TGT is found
+let TGTs = SecurityEvent
+    | where TimeGenerated between ((Now - Window - TgtLifetime) .. Now)
+    | where EventID == 4768
+    | extend User = tolower(tostring(split(TargetUserName, "@")[0]))
+    | distinct User;
+let GoldenTicket = Recent
+    | where EventID == 4769
+    | join kind=leftanti TGTs on User
+    | extend Detection = "Golden Ticket: service ticket with no TGT", Technique = "T1558.001";
+let Kerberoast = Recent
+    | where EventID == 4769 and TicketEncryptionType == "0x17"
+    | where ServiceName !endswith "$" and ServiceName != "krbtgt"
+    | extend Detection = "Kerberoasting: RC4 ticket for user service account", Technique = "T1558.003";
+let ASREPRoast = Recent
+    | where EventID == 4768 and PreAuthType == "0"
+    | extend Detection = "AS-REP roasting: TGT without pre-auth", Technique = "T1558.004";
+union GoldenTicket, Kerberoast, ASREPRoast
+| project TimeGenerated, Detection, Technique, User, ServiceName, IpAddress
+| sort by TimeGenerated asc
