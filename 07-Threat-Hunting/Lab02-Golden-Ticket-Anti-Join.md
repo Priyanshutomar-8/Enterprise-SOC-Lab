@@ -175,3 +175,12 @@ ticket by the absence of a matching 4768, doing what the rule engine structurall
 cannot. **No custom rule** - the detection is a hunt by necessity. Next: **Lab 03 -
 beacon periodicity** (stack-counting Sysmon EID3 inter-connection gaps), then the
 **Lab 04 capstone** - promote a hunt to a rule, or document why it must stay a hunt.
+
+## Evidence (screenshots)
+| # | Shows |
+|---|---|
+| 1 | [4769 events in the archive](../11-Screenshots/07-Threat-Hunting/Lab02-1-4769-events.png) |
+| 2 | [4769s sourced from Kali (`::ffff:192.168.56.80`)](../11-Screenshots/07-Threat-Hunting/Lab02-2-4769-from-kali.png) |
+| 3 | [Kali's TGT and ticket requests](../11-Screenshots/07-Threat-Hunting/Lab02-3-kali-tgt-and-tickets.png) |
+| 4 | [The orphan `svc-sql` 4769](../11-Screenshots/07-Threat-Hunting/Lab02-4-svc-sql-orphan-4769.png) |
+| 5 | [PPL two-pass stats - the anti-join](../11-Screenshots/07-Threat-Hunting/Lab02-5-ppl-stats-anti-join.png) |

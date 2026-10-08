@@ -140,3 +140,15 @@ SecurityEvent
 ## Files
 - [`Lab01-KQL-Kerberos-Detections.kql`](Lab01-KQL-Kerberos-Detections.kql) - dataset +
   combined detection query, runnable as-is in any Kusto engine.
+
+## Evidence (screenshots)
+One per test-matrix step above.
+
+| Step | Shows |
+|---|---|
+| 1 | [The 8-row synthetic dataset](../11-Screenshots/10-Sentinel-KQL/Lab01-1-synthetic-dataset.png) |
+| 2a | [Raw anti-join - 4 rows (normalization trap)](../11-Screenshots/10-Sentinel-KQL/Lab01-2-raw-antijoin-4-rows.png) |
+| 2b | [Normalized - 1 row](../11-Screenshots/10-Sentinel-KQL/Lab01-3-normalized-1-row.png) |
+| 2c | [Same window - 2 rows (stale-TGT FP)](../11-Screenshots/10-Sentinel-KQL/Lab01-4-same-window-2-rows.png) |
+| 2d | [Asymmetric lookback - 1 row](../11-Screenshots/10-Sentinel-KQL/Lab01-5-asymmetric-lookback-1-row.png) |
+| 5 | [Combined - 3 detections](../11-Screenshots/10-Sentinel-KQL/Lab01-6-combined-3-detections.png) |
