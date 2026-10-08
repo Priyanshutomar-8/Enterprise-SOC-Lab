@@ -1,0 +1,43 @@
+// Lab 01b - Lab 01's Kerberos detections run against REAL DC01 events exported
+// from the Wazuh archive (Modules 06-07). Engine: Azure Data Explorer free cluster.
+// Rows are loaded with `.ingest inline into table WazuhKerberosReal <| <csv rows>`
+// from the CSV produced by Lab01b-extract-kerberos.py (columns in table order).
+
+.create-merge table WazuhKerberosReal (TimeGenerated:datetime, EventID:int, TargetUserName:string, ServiceName:string, TicketEncryptionType:string, PreAuthType:string, Status:string, IpAddress:string)
+
+// --- Dataset check: expect 4768 = 93, 4769 = 205
+WazuhKerberosReal
+| summarize N = count(), From = min(TimeGenerated), To = max(TimeGenerated) by EventID
+
+// --- Kerberoasting (T1558.003): RC4 service ticket for a user-account SPN
+WazuhKerberosReal
+| where EventID == 4769
+| where TicketEncryptionType == "0x17"
+| where ServiceName !endswith "$" and ServiceName != "krbtgt"
+| project TimeGenerated, TargetUserName, ServiceName, TicketEncryptionType, IpAddress
+
+// --- AS-REP roasting (T1558.004): TGT issued without pre-authentication
+WazuhKerberosReal
+| where EventID == 4768 and PreAuthType == "0"
+
+// --- Golden Ticket (T1558.001): service ticket with no TGT for that user in the
+//     prior 10h (TGT lifetime). Per-user, so a legit 4768 masks a forgery.
+let tgs = WazuhKerberosReal
+    | where EventID == 4769
+    | extend U = tolower(tostring(split(TargetUserName, "@")[0]));
+let tgt = WazuhKerberosReal
+    | where EventID == 4768
+    | extend U = tolower(TargetUserName)
+    | project U, TgtTime = TimeGenerated;
+tgs
+| join kind=leftouter tgt on U
+| summarize PriorTGT = countif(TgtTime between ((TimeGenerated - 10h) .. TimeGenerated))
+    by TimeGenerated, U, ServiceName, IpAddress
+| where PriorTGT == 0
+
+// --- svc-sql timeline on 2026-09-22: the forged 4769 (21:41:56) follows a legit
+//     4768 (21:37:35) and is therefore not flagged
+WazuhKerberosReal
+| where TargetUserName startswith "svc-sql" and TimeGenerated > datetime(2026-09-22)
+| project TimeGenerated, EventID, TicketEncryptionType, IpAddress
+| order by TimeGenerated asc

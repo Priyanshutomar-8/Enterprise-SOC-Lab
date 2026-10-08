@@ -18,5 +18,6 @@ across events - and measures what that buys, and what it still cannot see.
 | # | Lab | Data | Detections | Status |
 |---|---|---|---|---|
 | 01 | [Kerberos detections in KQL](Lab01-KQL-Kerberos-Detections.md) | Synthetic (`datatable`), ADX free cluster | Golden Ticket anti-join, Kerberoast, AS-REP | **Complete** |
+| 01b | [Lab 01's KQL against real DC01 telemetry](Lab01b-KQL-on-Real-Telemetry.md) | Real, replayed from the Wazuh archive (298 events), ADX free cluster | Same three - Golden Ticket: 1 TP / 2 FP / 1 FN (masked forgery) | **Complete** |
 | 02 | Sentinel workspace + DC01 onboarding (Arc + AMA) | Live | - | Planned |
 | 03 | Analytics rules, entity mapping, live-fire from Kali | Live | Lab 01 rules on real data | Planned |
