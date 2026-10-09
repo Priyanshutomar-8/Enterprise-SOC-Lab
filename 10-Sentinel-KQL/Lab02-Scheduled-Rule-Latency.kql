@@ -1,0 +1,88 @@
+// Lab 02 - Scheduled analytics rules vs. late and mis-stamped events.
+// Engine: Azure Data Explorer free cluster (same KQL as Sentinel). Not a Sentinel deployment.
+// Adds the Wazuh manager receive time to Lab 01b's 298 real DC01 events and simulates
+// scheduled-rule runs over them.
+
+// --- Receive-time table, keyed on (TimeGenerated, EventID, TargetUserName) - unique in this data.
+// Rows come from Lab02-extract-kerberos.py (TimeGenerated, EventID, TargetUserName, ReceivedTime).
+.create table WazuhKerbRecv (TimeGenerated:datetime, EventID:int, TargetUserName:string, ReceivedTime:datetime)
+// .ingest inline into table WazuhKerbRecv <| <csv rows>   (3 chunks: 100 + 100 + 98)
+
+// --- Join check: expect Rows = Matched = 298
+WazuhKerberosReal
+| join kind=leftouter WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+| summarize Rows = count(), Matched = countif(isnotnull(ReceivedTime)), Recv = dcount(ReceivedTime)
+
+// --- Part A: delay = manager receive time - DC event time
+WazuhKerberosReal
+| join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+| extend DelayS = (ReceivedTime - TimeGenerated) / 1s
+| extend Class = case(DelayS > 300, "late >5m", DelayS < 0, "negative", "0-5m")
+| summarize N = count(), P50 = percentile(DelayS, 50), P90 = percentile(DelayS, 90),
+    P99 = percentile(DelayS, 99), Max = max(DelayS), Min = min(DelayS) by Class
+
+// --- Part B: single-event visibility under scheduled runs.
+// Model: runs at multiples of F; run t queries TimeGenerated in [t-L, t] and executes at t+X
+// (X = Sentinel's documented 5-minute run delay), so it sees events with ReceivedTime <= t+X.
+// An event is caught if the FIRST run that can see it still has it inside its look-back.
+let Ev = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, ReceivedTime, EventID, TargetUserName;
+let Cfg = datatable(Name:string, F:timespan, L:timespan, X:timespan) [
+    "A 5m/5m no-delay", 5m, 5m, 0m,
+    "B 5m/5m +5m-delay", 5m, 5m, 5m,
+    "C 5m/10m +5m", 5m, 10m, 5m,
+    "D 1h/1h +5m", 1h, 1h, 5m,
+    "E 1h/14d +5m", 1h, 14d, 5m];
+Ev
+| extend k = 1
+| join kind=inner (Cfg | extend k = 1) on k
+| extend FirstRun = bin(max_of(ReceivedTime - X, TimeGenerated) - 1tick, F) + F
+| extend Caught = FirstRun - L <= TimeGenerated
+| summarize Events = count(), Missed = countif(not(Caught)),
+    MissedNonDC = countif(not(Caught) and TargetUserName !startswith "DC01$"),
+    MissedUsers = make_set_if(TargetUserName, not(Caught)) by Name
+| order by Name asc
+
+// --- Part C: Lab 01b's Golden Ticket anti-join, run on a schedule vs. once in batch.
+// Per run t: the 4769 must be inside [t-L, t] and already received; the 4768 that clears it
+// must also have been received by t+X. Batch = Lab 01b (all data visible at once).
+// NOTE: range() returns its start value even when start > stop, so the
+// `where TgsTime between ((t - L) .. t)` line is required - without it, events that
+// no run can see get one phantom run (this inflated the first attempt from 3 to 20 tickets).
+let Ev = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName;
+let tgs = Ev
+    | where EventID == 4769
+    | extend U = tolower(tostring(split(TargetUserName, "@")[0]))
+    | project TgsTime = TimeGenerated, TgsRecv = ReceivedTime, U, ServiceName, IpAddress;
+let tgt = Ev
+    | where EventID == 4768
+    | extend U = tolower(TargetUserName)
+    | project U, TgtTime = TimeGenerated, TgtRecv = ReceivedTime;
+let Cfg = datatable(Name:string, F:timespan, L:timespan, X:timespan) [
+    "S1", 5m, 5m, 5m,
+    "S2", 1h, 1h, 5m,
+    "S3", 1h, 2h, 5m];
+let sched = tgs
+    | extend k = 1
+    | join kind=inner (Cfg | extend k = 1) on k
+    | extend FirstRun = bin(max_of(TgsRecv - X, TgsTime) - 1tick, F) + F
+    | extend RunList = range(FirstRun, TgsTime + L, F)
+    | mv-expand t = RunList to typeof(datetime)
+    | where TgsTime between ((t - L) .. t)
+    | join kind=leftouter tgt on U
+    | summarize PriorTGT = countif(TgtTime between ((TgsTime - 10h) .. TgsTime) and TgtRecv <= t + X)
+        by Name, t, TgsTime, U
+    | where PriorTGT == 0
+    | summarize Configs = make_set(Name), Runs = count() by TgsTime, U;
+let batch = tgs
+    | join kind=leftouter tgt on U
+    | summarize P = countif(TgtTime between ((TgsTime - 10h) .. TgsTime)) by TgsTime, U, TgsRecv, IpAddress
+    | extend Batch = P == 0;
+sched
+| join kind=fullouter batch on TgsTime, U
+| where isnotempty(Configs) or Batch
+| project T = coalesce(TgsTime, TgsTime1), User = coalesce(U, U1), Ip = IpAddress,
+    DelayS = (TgsRecv - coalesce(TgsTime, TgsTime1)) / 1s, Batch, Configs, Runs
+| order by T asc
