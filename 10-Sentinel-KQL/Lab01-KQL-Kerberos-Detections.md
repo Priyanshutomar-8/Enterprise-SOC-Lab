@@ -8,7 +8,7 @@ logic step by step against a controlled dataset, hit each known trap on purpose,
 end with a single query shaped like a Sentinel scheduled analytics rule.
 
 **This lab uses SYNTHETIC data.** It proves query *logic*, not detection on live
-telemetry. Live-fire against DC01 in a real Sentinel workspace is Lab 02+ (see Next).
+telemetry. Live-fire against DC01 in a real Sentinel workspace is Lab 03+ (see Next).
 
 ## Framing
 | Field | Value |
@@ -110,7 +110,7 @@ SecurityEvent
    **Conclusion: a triage lead, not a standalone alarm.**
 4. **Correlation is the payoff of putting the three together.** All three hits share
    one source IP inside 35 minutes. Separately they are three medium alerts; grouped
-   by source they are one intrusion. Sentinel's incident grouping (Lab 02+) is built
+   by source they are one intrusion. Sentinel's incident grouping (Lab 03+) is built
    for this.
 
 ## Known limitations (documented, not closed)
@@ -130,10 +130,10 @@ SecurityEvent
   building it).
 
 ## Next (Module 10 roadmap)
-- **Lab 02** - personal Azure free account, Sentinel workspace, budget alert; DC01
+- **Lab 03** - Azure subscription (pay-as-you-go; free trial already used), Sentinel workspace, budget alert; DC01
   onboarded via Azure Arc + Azure Monitor Agent, collection filtered to
   4624/4768/4769/4770 to keep ingestion near zero. Verify the real schema.
-- **Lab 03** - deploy the three detections as scheduled analytics rules with entity
+- **Lab 04** - deploy the three detections as scheduled analytics rules with entity
   mapping; live-fire from Kali (impacket `ticketer`, `GetUserSPNs`, `GetNPUsers`);
   confirm incidents and grouping; re-run the masking and stale-TGT cases on real data.
 

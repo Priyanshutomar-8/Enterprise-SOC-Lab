@@ -9,7 +9,7 @@ from those labs - and records what the queries catch, what they miss, and why.
 **This lab uses REAL telemetry, replayed - not live collection.** The events were
 exported from Wazuh's archive and loaded into Kusto after the fact. It is not a
 Sentinel deployment; there is no agent, no analytics rule, no incident. That is
-Lab 02+.
+Lab 03+.
 
 ## Framing
 | Field | Value |
