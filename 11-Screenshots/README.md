@@ -9,4 +9,4 @@ result, a gap), not routine setup. New labs capture findings as they are run.
 | Module | Folder | Labs covered |
 |---|---|---|
 | 07 - Threat Hunting | [`07-Threat-Hunting/`](07-Threat-Hunting/) | Lab 02 |
-| 10 - Sentinel / KQL | [`10-Sentinel-KQL/`](10-Sentinel-KQL/) | Lab 01, Lab 01b |
+| 10 - Sentinel / KQL | [`10-Sentinel-KQL/`](10-Sentinel-KQL/) | Lab 01, Lab 01b, Lab 02, Lab 02b |
