@@ -1,0 +1,20 @@
+// Lab 02c test shim - real events PLUS ONE SYNTHETIC AS-REP row (PreAuthType 0).
+// The Wazuh archive holds no AS-REP events, so the positive test for the AS-REP rule
+// cannot use real data. The synthetic row is labelled and placed at 2026-09-10 12:00Z.
+let RunAt = datetime({{RUNAT}});
+let Shift = now() - RunAt;
+let Synthetic = datatable(TimeGenerated:datetime, EventID:int, TargetUserName:string, ServiceName:string,
+    TicketEncryptionType:string, PreAuthType:string, Status:string, IpAddress:string, ReceivedTime:datetime) [
+    datetime(2026-09-10T12:00:00Z), 4768, "synthetic-asrep", "krbtgt", "0x17", "0", "0x0",
+        "::ffff:192.168.56.80", datetime(2026-09-10T12:00:20Z)
+];
+let SecurityEvent = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, TicketEncryptionType,
+        PreAuthType, Status, IpAddress, ReceivedTime
+    | union Synthetic
+    | extend TimeGenerated = TimeGenerated + Shift, _Ingest = ReceivedTime + Shift,
+        Computer = "DC01.lab.local"
+    | where _Ingest <= now() and TimeGenerated > ago({{QUERYPERIOD}});
+{{QUERY}}
+| extend RealEventTime = TimeGenerated - Shift

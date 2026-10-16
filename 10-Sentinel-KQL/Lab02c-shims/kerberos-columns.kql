@@ -1,0 +1,16 @@
+// Lab 02c test shim - real DC01 Kerberos events (Lab 01b/02 tables), Kerberos fields as COLUMNS.
+// Stands in for Sentinel's SecurityEvent table and replays one scheduled run at {{RUNAT}}:
+//  - every timestamp is shifted by (now() - RunAt), so the rule's ago() lands on RunAt;
+//  - ingestion_time() is replaced by _Ingest = Wazuh manager receive time (shifted);
+//  - only rows already received at RunAt, inside queryPeriod, are visible (what Sentinel does).
+let RunAt = datetime({{RUNAT}});
+let Shift = now() - RunAt;
+let SecurityEvent = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, TicketEncryptionType,
+        PreAuthType, Status, IpAddress, ReceivedTime
+    | extend TimeGenerated = TimeGenerated + Shift, _Ingest = ReceivedTime + Shift,
+        Computer = "DC01.lab.local"
+    | where _Ingest <= now() and TimeGenerated > ago({{QUERYPERIOD}});
+{{QUERY}}
+| extend RealEventTime = TimeGenerated - Shift

@@ -1,0 +1,74 @@
+id: 5ad8e06b-7c21-4f93-9e47-b16c0a3d82f4
+name: System clock changed by an unexpected process (Lab 02c)
+description: |
+  Event 4616 (system time changed) where the process is not a known time source.
+  High on a domain controller (watchlist DomainControllers), Medium elsewhere. Ported from
+  Enterprise-SOC-Lab Module 10 Lab 02b (Wazuh rules 101000/101001).
+  Collapses the two 4616 events written by one Set-Date into one alert (5-minute bins on
+  ingestion time). Known evasion: a rogue NTP source makes svchost.exe the changer.
+  Known gap: clock steps written before the collection agent starts are never collected.
+  Validated in Azure Data Explorer on a reconstructed table, not in a Sentinel workspace.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SecurityEvents
+    dataTypes:
+      - SecurityEvent
+  - connectorId: WindowsSecurityEvents
+    dataTypes:
+      - SecurityEvent
+queryFrequency: 1h
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - DefenseEvasion
+relevantTechniques:
+  - T1070.006
+query: |
+  // The 4616 event is stamped with the FORGED time (Lab 02b), so the window is on
+  // ingestion time. Previous/new time only exist inside EventData.
+  let runWindow = 1h;
+  let knownTimeSources = dynamic(["vboxservice.exe", "svchost.exe"]);
+  let DCs = toscalar(_GetWatchlist('DomainControllers') | summarize make_set(tolower(tostring(SearchKey))));
+  SecurityEvent
+  | where EventID == 4616
+  | extend IngestTime = ingestion_time()
+  | where IngestTime > ago(runWindow)
+  | extend EvData = tostring(column_ifexists("EventData", ""))
+  | extend Proc = tostring(column_ifexists("ProcessName", ""))
+  | extend Proc = iff(isempty(Proc), extract(@'Name="ProcessName">([^<]+)<', 1, EvData), Proc)
+  | extend ProcFile = tolower(tostring(split(Proc, @"\")[-1]))
+  | where ProcFile !in (knownTimeSources)
+  | extend PreviousTime = todatetime(extract(@'Name="PreviousTime">([^<]+)<', 1, EvData)),
+      NewTime = todatetime(extract(@'Name="NewTime">([^<]+)<', 1, EvData))
+  | extend ShiftSec = abs((NewTime - PreviousTime) / 1s)
+  | summarize TimeGenerated = min(TimeGenerated), FirstIngest = min(IngestTime), Changes = count(),
+      MaxShiftSec = max(ShiftSec)
+      by Computer, SubjectUserName, ProcFile, bin(IngestTime, 5m)
+  | extend IsDC = tolower(Computer) in (DCs)
+  | extend Severity = iff(IsDC, "High", "Medium")
+  | project TimeGenerated, FirstIngest, Computer, IsDC, Severity, SubjectUserName, ProcFile, Changes, MaxShiftSec
+entityMappings:
+  - entityType: Host
+    fieldMappings:
+      - identifier: FullName
+        columnName: Computer
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: SubjectUserName
+  - entityType: File
+    fieldMappings:
+      - identifier: Name
+        columnName: ProcFile
+customDetails:
+  ClockShiftSeconds: MaxShiftSec
+  ChangeEvents: Changes
+  IsDomainController: IsDC
+alertDetailsOverride:
+  alertDisplayNameFormat: "Clock changed on {{Computer}} by {{ProcFile}} ({{MaxShiftSec}} s)"
+  alertSeverityColumnName: Severity
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+version: 1.0.0
+kind: Scheduled

@@ -1,0 +1,57 @@
+id: 9b41d7c3-52e8-4f0a-8a6d-7c3e19b2d058
+name: AS-REP roasting - TGT issued without Kerberos pre-authentication (Lab 02c)
+description: |
+  Event 4768 with PreAuthType 0: a TGT was issued for an account that does not require
+  pre-authentication, so its AS-REP can be cracked offline. Ported from Enterprise-SOC-Lab
+  Module 06 Lab 03 (Wazuh rule 100601) and Module 10 Lab 01.
+  The real DC01 archive holds no PreAuthType 0 events, so the positive test uses one
+  labelled synthetic row. Validated in Azure Data Explorer, not in a Sentinel workspace.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SecurityEvents
+    dataTypes:
+      - SecurityEvent
+  - connectorId: WindowsSecurityEvents
+    dataTypes:
+      - SecurityEvent
+queryFrequency: 1h
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1558.004
+query: |
+  // Same ingestion-time window as the Kerberoasting rule (see Lab 02).
+  // PreAuthType may only exist inside EventData in SecurityEvent - read either.
+  let runWindow = 1h;
+  SecurityEvent
+  | where EventID == 4768
+  | where ingestion_time() > ago(runWindow)
+  | extend EvData = tostring(column_ifexists("EventData", ""))
+  | extend PreAuth = tostring(column_ifexists("PreAuthType", ""))
+  | extend PreAuth = iff(isempty(PreAuth), extract(@'Name="PreAuthType">([^<]+)<', 1, EvData), PreAuth)
+  | where PreAuth == "0"
+  | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]))
+  | extend SrcIp = trim_start(@"::ffff:", tostring(IpAddress))
+  | project TimeGenerated, Computer, AccountName, PreAuth, SrcIp
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SrcIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: FullName
+        columnName: Computer
+alertDetailsOverride:
+  alertDisplayNameFormat: "AS-REP roasting: TGT without pre-auth for {{AccountName}} from {{SrcIp}}"
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+version: 1.0.0
+kind: Scheduled

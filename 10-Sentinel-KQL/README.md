@@ -21,5 +21,6 @@ across events - and measures what that buys, and what it still cannot see.
 | 01b | [Lab 01's KQL against real DC01 telemetry](Lab01b-KQL-on-Real-Telemetry.md) | Real, replayed from the Wazuh archive (298 events), ADX free cluster | Same three - Golden Ticket: 1 TP / 2 FP / 1 FN (masked forgery) | **Complete** |
 | 02 | [Scheduled rules vs. late events](Lab02-Scheduled-Rule-Latency.md) | Real, replayed + manager receive time, ADX free cluster | Lab 01b rules simulated on a schedule - 21/298 events mis-dated by DC01's boot-time clock, silently dropped | **Complete** |
 | 02b | [Detecting a DC clock change](Lab02b-DC-Time-Change-Detection.md) | Live-fire, Wazuh (DC01) | 101000 / 101001 - L12 fired on `Set-Date`; the slewed repair and boot-time steps never reach the SIEM | **Complete** |
+| 02c | [Analytics rules as code](Lab02c-Detection-as-Code.md) | Real replay + reconstructed 4616, ADX free cluster | 4 Sentinel rule YAMLs (Kerberoast, AS-REP, Golden Ticket lead, clock change) - linted, replayed per scheduled run, 9/9 harness runs as predicted | **Complete** |
 | 03 | Sentinel workspace + DC01 onboarding (Arc + AMA) | Live | - | Planned (needs a paid subscription) |
 | 04 | Analytics rules, entity mapping, live-fire from Kali | Live | Lab 01 rules on real data | Planned (needs a paid subscription) |

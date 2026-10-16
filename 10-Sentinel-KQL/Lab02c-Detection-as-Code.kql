@@ -1,0 +1,47 @@
+// Lab 02c - Sentinel analytics rules as code, validated in the ADX free cluster.
+// Rules: Lab02c-rules/*.yaml. Harnesses are produced by Lab02c-render.ps1 (rule query
+// verbatim + a shim from Lab02c-shims/). This file holds the queries that are NOT harnesses.
+
+// --- Part A: expected results (batch, Lab 01b logic) and the hourly run that should
+// raise each one. RunAt = end of the 1h ingestion window that contains the receive time.
+let Ev = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, TicketEncryptionType, IpAddress, ReceivedTime;
+let kerb = Ev
+    | where EventID == 4769 and TicketEncryptionType == "0x17"
+    | where ServiceName !endswith "$" and ServiceName != "krbtgt"
+    | extend Rule = "Kerberoast";
+let tgs = Ev
+    | where EventID == 4769
+    | extend U = tolower(tostring(split(TargetUserName, "@")[0]));
+let tgt = Ev
+    | where EventID == 4768
+    | extend U = tolower(tostring(split(TargetUserName, "@")[0]))
+    | project U, TgtTime = TimeGenerated;
+let gt = tgs
+    | join kind=leftouter tgt on U
+    | summarize P = countif(TgtTime between ((TimeGenerated - 10h) .. TimeGenerated))
+        by TimeGenerated, TargetUserName, ServiceName, ReceivedTime
+    | where P == 0
+    | extend Rule = "GoldenTicket";
+let forged = Ev
+    | where EventID == 4769 and TargetUserName startswith "svc-sql"
+    | where TimeGenerated between (datetime(2026-09-22T21:41:00Z) .. datetime(2026-09-22T21:43:00Z))
+    | extend Rule = "GoldenTicket-MISSED (M07 L04 forgery)";
+union kerb, gt, forged
+| extend RunAt = bin(ReceivedTime - 1tick, 1h) + 1h
+| project Rule, TimeGenerated, ReceivedTime, RunAt, TargetUserName, ServiceName
+| order by Rule asc, TimeGenerated asc
+
+// --- Part 3: event-time window vs. ingestion-time window, over all 298 events.
+// A = TimeGenerated window, 1h/1h, run executes ~5 min after the window closes (Lab 02 config D).
+// B = this lab's rules: ingestion window 1h, TimeGenerated bounded only by queryPeriod 1d.
+// Each event falls in exactly one window of each kind, so "missed" = never seen by any run.
+WazuhKerberosReal
+| join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+| extend RunA = bin(TimeGenerated - 1tick, 1h) + 1h
+| extend CaughtA = ReceivedTime <= RunA + 5m
+| extend RunB = bin(ReceivedTime - 1tick, 1h) + 1h
+| extend CaughtB = TimeGenerated > RunB - 1d
+| summarize Events = count(), MissedA = countif(not(CaughtA)), MissedB = countif(not(CaughtB)),
+    MissedA_NonDC = countif(not(CaughtA) and TargetUserName !startswith "DC01$")

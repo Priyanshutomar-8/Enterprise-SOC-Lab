@@ -1,0 +1,19 @@
+// Lab 02c test shim - same real events, but TicketEncryptionType and PreAuthType exist ONLY
+// inside an EventData XML string (the other possible SecurityEvent layout). A rule that reads
+// the column directly fails here with a semantic error ("failed to resolve ... named
+// 'TicketEncryptionType'"); a rule with the EventData fallback must return exactly what it
+// returns under kerberos-columns.kql.
+let RunAt = datetime({{RUNAT}});
+let Shift = now() - RunAt;
+let SecurityEvent = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, TicketEncryptionType,
+        PreAuthType, Status, IpAddress, ReceivedTime
+    | extend EventData = strcat('<EventData><Data Name="TicketEncryptionType">', TicketEncryptionType,
+        '</Data><Data Name="PreAuthType">', PreAuthType, '</Data></EventData>')
+    | project-away TicketEncryptionType, PreAuthType
+    | extend TimeGenerated = TimeGenerated + Shift, _Ingest = ReceivedTime + Shift,
+        Computer = "DC01.lab.local"
+    | where _Ingest <= now() and TimeGenerated > ago({{QUERYPERIOD}});
+{{QUERY}}
+| extend RealEventTime = TimeGenerated - Shift

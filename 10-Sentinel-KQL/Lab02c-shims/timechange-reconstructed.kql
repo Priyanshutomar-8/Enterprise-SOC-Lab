@@ -1,0 +1,38 @@
+// Lab 02c test shim - event 4616 (system time changed). RECONSTRUCTED, not exported:
+// no 4616 data is in ADX. Rows 1-2 are the Lab 02b live-fire values (times from the
+// writeup; process path assumed standard). Rows 3-5 are SYNTHETIC, one per test case.
+// Not included because they were never ingested: the two boot-time VBoxService steps
+// from Lab 02b (written before the Wazuh agent started) - no SIEM rule can see them.
+// ProcessName and Previous/New time are only in EventData, so the rule's fallback path runs.
+// _GetWatchlist is a stub for Sentinel's watchlist function.
+let RunAt = datetime({{RUNAT}});
+let Shift = now() - RunAt;
+let _GetWatchlist = (alias:string) { datatable(SearchKey:string) ["DC01.lab.local"] };
+let Raw = datatable(Row:int, Source:string, TimeGenerated:datetime, ReceivedTime:datetime, Computer:string,
+    SubjectUserName:string, ProcessName:string, PreviousTime:string, NewTime:string) [
+    1, "real", datetime(2026-10-15T16:34:55.042Z), datetime(2026-10-15T16:38:15.614Z), "DC01.lab.local",
+        "Administrator", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
+        "2026-10-15T16:37:55.0664000Z", "2026-10-15T16:34:55.0420000Z",
+    2, "real", datetime(2026-10-15T16:34:55.043Z), datetime(2026-10-15T16:38:15.638Z), "DC01.lab.local",
+        "Administrator", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
+        "2026-10-15T16:34:55.0434000Z", "2026-10-15T16:34:55.0420000Z",
+    3, "synthetic", datetime(2026-10-15T16:10:00Z), datetime(2026-10-15T16:10:20Z), "DC01.lab.local",
+        "DC01$", @"C:\Windows\System32\VBoxService.exe",
+        "2026-10-15T16:05:00.0000000Z", "2026-10-15T16:10:00.0000000Z",
+    4, "synthetic", datetime(2026-10-15T16:20:00Z), datetime(2026-10-15T16:20:15Z), "ENDPOINT01.lab.local",
+        "LOCAL SERVICE", @"C:\Windows\System32\svchost.exe",
+        "2026-10-15T16:19:58.0000000Z", "2026-10-15T16:20:00.0000000Z",
+    5, "synthetic", datetime(2026-10-15T16:50:00Z), datetime(2026-10-15T16:50:20Z), "ENDPOINT01.lab.local",
+        "alice", @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
+        "2026-10-15T16:55:00.0000000Z", "2026-10-15T16:50:00.0000000Z"
+];
+let SecurityEvent = Raw
+    | extend EventID = 4616,
+        EventData = strcat('<EventData><Data Name="PreviousTime">', PreviousTime,
+            '</Data><Data Name="NewTime">', NewTime,
+            '</Data><Data Name="ProcessName">', ProcessName, '</Data></EventData>')
+    | project-away PreviousTime, NewTime, ProcessName
+    | extend TimeGenerated = TimeGenerated + Shift, _Ingest = ReceivedTime + Shift
+    | where _Ingest <= now() and TimeGenerated > ago({{QUERYPERIOD}});
+{{QUERY}}
+| extend RealEventTime = TimeGenerated - Shift

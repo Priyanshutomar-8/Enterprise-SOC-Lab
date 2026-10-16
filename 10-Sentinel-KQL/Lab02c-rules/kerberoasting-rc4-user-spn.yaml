@@ -1,0 +1,62 @@
+id: 3f6c2a1e-8d4b-4e7a-9c15-2b7d0e9a4f61
+name: Kerberoasting - RC4 service ticket for a user-account SPN (Lab 02c)
+description: |
+  Event 4769 where a service ticket was issued with RC4-HMAC (0x17) for a service
+  that is not a computer account or krbtgt. Ported from Enterprise-SOC-Lab Module 06
+  Lab 02 (Wazuh rule 100600) and Module 10 Lab 01/01b.
+  Known evasion: AES Kerberoasting (etype 0x12) is not covered.
+  Validated in Azure Data Explorer against replayed DC01 events, not in a Sentinel workspace.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SecurityEvents
+    dataTypes:
+      - SecurityEvent
+  - connectorId: WindowsSecurityEvents
+    dataTypes:
+      - SecurityEvent
+queryFrequency: 1h
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1558.003
+query: |
+  // Window on ingestion time, not TimeGenerated: a DC with a wrong clock writes events
+  // with old timestamps (Lab 02: 21/298 mis-dated). queryPeriod (1d) bounds TimeGenerated.
+  // TicketEncryptionType may only exist inside EventData in SecurityEvent - read either.
+  let runWindow = 1h;
+  SecurityEvent
+  | where EventID == 4769
+  | where ingestion_time() > ago(runWindow)
+  | extend EvData = tostring(column_ifexists("EventData", ""))
+  | extend Etype = tostring(column_ifexists("TicketEncryptionType", ""))
+  | extend Etype = iff(isempty(Etype), extract(@'Name="TicketEncryptionType">([^<]+)<', 1, EvData), Etype)
+  | where Etype == "0x17"
+  | where ServiceName !endswith "$" and ServiceName !~ "krbtgt"
+  | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]))
+  | extend SrcIp = trim_start(@"::ffff:", tostring(IpAddress))
+  | project TimeGenerated, Computer, AccountName, ServiceName, Etype, SrcIp
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SrcIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: FullName
+        columnName: Computer
+customDetails:
+  TargetService: ServiceName
+  TicketEtype: Etype
+alertDetailsOverride:
+  alertDisplayNameFormat: "Kerberoasting: RC4 ticket for {{ServiceName}} requested by {{AccountName}}"
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+version: 1.0.0
+kind: Scheduled

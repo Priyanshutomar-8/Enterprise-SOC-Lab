@@ -1,0 +1,68 @@
+id: c7e2a915-0f3d-4b86-b1e4-5d9a28f6c3b7
+name: Golden Ticket lead - service ticket with no TGT for the user in 10 hours (Lab 02c)
+description: |
+  Event 4769 for a user with no 4768 (TGT issued) in the previous 10 hours (default TGT
+  lifetime). A forged TGT never passes through the KDC, so its service tickets have no
+  matching 4768. Ported from Enterprise-SOC-Lab Module 07 Lab 02/04 and Module 10 Lab 01b.
+  This is a TRIAGE LEAD, not an alarm. Known FN: per-user, so any legitimate 4768 for the
+  same user inside 10 hours masks a forgery (Lab 01b missed the Module 07 Lab 04 forgery
+  this way). Known FPs: stale TGTs older than the lookback, and data that starts after
+  the TGT was issued. Validated in Azure Data Explorer, not in a Sentinel workspace.
+severity: Medium
+requiredDataConnectors:
+  - connectorId: SecurityEvents
+    dataTypes:
+      - SecurityEvent
+  - connectorId: WindowsSecurityEvents
+    dataTypes:
+      - SecurityEvent
+queryFrequency: 1h
+queryPeriod: 1d
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+  - CredentialAccess
+relevantTechniques:
+  - T1558.001
+query: |
+  // New service tickets = ingested in this run's window (Lab 02: event time is unreliable).
+  // TGT side = everything in queryPeriod (1d), which covers the 10h lifetime plus clock skew.
+  // User names are normalised on both sides: 4769 carries user@REALM, 4768 carries user.
+  let runWindow = 1h;
+  let tgtLifetime = 10h;
+  let tgs = SecurityEvent
+      | where EventID == 4769
+      | where ingestion_time() > ago(runWindow)
+      | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]));
+  let tgt = SecurityEvent
+      | where EventID == 4768
+      | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]))
+      | project AccountName, TgtTime = TimeGenerated;
+  tgs
+  | join kind=leftouter tgt on AccountName
+  | summarize PriorTGT = countif(TgtTime between ((TimeGenerated - tgtLifetime) .. TimeGenerated))
+      by TimeGenerated, Computer, AccountName, ServiceName, IpAddress
+  | where PriorTGT == 0
+  | extend SrcIp = trim_start(@"::ffff:", tostring(IpAddress))
+  | project TimeGenerated, Computer, AccountName, ServiceName, SrcIp
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: Name
+        columnName: AccountName
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: SrcIp
+  - entityType: Host
+    fieldMappings:
+      - identifier: FullName
+        columnName: Computer
+customDetails:
+  TargetService: ServiceName
+alertDetailsOverride:
+  alertDisplayNameFormat: "Golden Ticket lead: {{AccountName}} used a service ticket with no TGT in 10h"
+eventGroupingSettings:
+  aggregationKind: AlertPerResult
+version: 1.0.0
+kind: Scheduled
