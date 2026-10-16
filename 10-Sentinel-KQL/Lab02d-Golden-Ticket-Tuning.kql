@@ -1,0 +1,99 @@
+// Lab 02d - Golden Ticket rule v1.0.0 -> v1.1.0: tuning behind a regression gate.
+// Engine: ADX free cluster. Data: the 298 real DC01 events + receive times (Labs 01b/02).
+//
+// HOURLY FULL-HISTORY SWEEP. With an ingestion-time window, every 4769 is evaluated by
+// exactly ONE hourly run: RunAt = end of the hour it was received in. So the whole history
+// can be replayed without looping over runs: give each 4769 its RunAt, then apply the rule's
+// conditions as that run would see them (TGT already received by RunAt, both sides inside
+// queryPeriod). This is an equivalent rewrite of the rule, not the verbatim query - it is
+// checked against the verbatim Lab 02c harness at the hit runs.
+//
+// Ground truth in this dataset (Module 07): two forged-ticket 4769s for svc-sql -
+//   2026-09-17 19:32:50 (Lab 02 forgery) and 2026-09-22 21:41:56 (Lab 04 forgery).
+// Every other flagged row is a false positive.
+//
+// PREDICTIONS, written before the first run:
+//   1.0.0         3 alerts: TP 09-17, FP DC01$ ::1 (09-15), FP svc-sql 09-22 21:32:55; L04 forgery missed
+//   a -loopback   2 alerts: drops the DC01$ ::1 FP only
+//   b -machine$   2 alerts: same as a, with a wider blind spot (every computer account)
+//   c 24h         unknown - 09-22 21:32:55 FP clears only if svc-sql had a 4768 in the prior 24h;
+//                 TP 09-17 survives only if svc-sql had NO 4768 in the 24h before it
+//   d 7d          expect the TP to be masked: a longer lookback trades true positives for fewer FPs
+//   No variant can flag the L04 forgery (per-user masking, a 4768 4m21s earlier).
+
+// --- Sweep: one row per alert per variant
+let Ev = WazuhKerberosReal
+    | join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, IpAddress, ReceivedTime
+    | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]));
+let Cfg = datatable(Ver:string, Lookback:timespan, QP:timespan, ExclLoopback:bool, ExclMachine:bool) [
+    "1.0.0 baseline", 10h, 1d, false, false,
+    "a -loopback", 10h, 1d, true, false,
+    "b -machine$", 10h, 1d, false, true,
+    "c lookback 24h", 24h, 2d, false, false,
+    "d lookback 7d", 7d, 8d, false, false];
+let tgs = Ev
+    | where EventID == 4769
+    | extend RunAt = bin(ReceivedTime - 1tick, 1h) + 1h, k = 1
+    | join kind=inner (Cfg | extend k = 1) on k
+    | where TimeGenerated > RunAt - QP
+    | where not(ExclLoopback and IpAddress == "::1")
+    | where not(ExclMachine and AccountName endswith "$");
+let tgt = Ev
+    | where EventID == 4768
+    | project AccountName, TgtTime = TimeGenerated, TgtRecv = ReceivedTime;
+tgs
+| join kind=leftouter tgt on AccountName
+| summarize PriorTGT = countif(TgtRecv <= RunAt and TgtTime > RunAt - QP
+        and TgtTime between ((TimeGenerated - Lookback) .. TimeGenerated))
+    by Ver, RunAt, TimeGenerated, AccountName, ServiceName, IpAddress
+| where PriorTGT == 0
+| extend Label = case(
+    AccountName == "svc-sql" and TimeGenerated between (datetime(2026-09-17T19:32:00Z) .. datetime(2026-09-17T19:34:00Z)), "TP L02",
+    AccountName == "svc-sql" and TimeGenerated between (datetime(2026-09-22T21:41:00Z) .. datetime(2026-09-22T21:43:00Z)), "TP L04",
+    "FP")
+| summarize Alerts = count(), Runs = dcount(RunAt), TP = countif(Label startswith "TP"), FP = countif(Label == "FP"),
+    Rows = make_list(strcat(format_datetime(TimeGenerated, "MM-dd HH:mm:ss"), " ", AccountName, " ", IpAddress, " ", Label))
+    by Ver
+| order by Ver asc
+
+// RESULT (2026-10-16): 1.0.0 = 3 (1 TP, 2 FP) | a = 2 (1 TP, 1 FP) | b = 2 (1 TP, 1 FP)
+//   | c 24h = 3 (no change) | d 7d = 3 (no change - prediction WRONG, TP not masked).
+//   L04 forgery flagged by no variant. Every alert in its own hourly run (3 runs for 3 alerts).
+
+// --- Why lookback length changed nothing: svc-sql's whole history in the archive.
+// Result: ONE 4768 (09-22 21:37:35, RC4) and four 4769s (09-17 19:32:50; 09-22 21:32:55,
+// 21:37:36, 21:41:56). No variant can find a TGT that was never collected.
+WazuhKerberosReal
+| join kind=inner WazuhKerbRecv on TimeGenerated, EventID, TargetUserName
+| where tolower(TargetUserName) startswith "svc-sql"
+| summarize N = count(), First = min(TimeGenerated), Last = max(TimeGenerated),
+    Times = make_list(format_datetime(TimeGenerated, "MM-dd HH:mm:ss"))
+    by EventID, TicketEncryptionType, IpAddress
+| order by EventID asc, First asc
+
+// --- Data-gap guard test: how long after DC01's telemetry resumed did each alert fire?
+// A "session" starts after a gap > 60 min in the Kerberos stream.
+// Result: DC01$ FP 0 min (it IS the first event after an 11.2-day gap since 09-04 02:26),
+// TP 2.8 min, svc-sql FP 4.2 min, L04 forgery 13 min. A guard that suppresses the first
+// minutes after a gap kills the TP along with both FPs -> rejected.
+// TRAP: alert times below are typed to the second, real events carry sub-second fractions;
+// without the +1s, the session that starts AT the alert is excluded (first run said 15,930 min).
+let Ev = WazuhKerberosReal
+    | order by TimeGenerated asc
+    | extend PrevT = prev(TimeGenerated)
+    | extend GapMin = (TimeGenerated - PrevT) / 1m;
+let starts = Ev
+    | where isnull(PrevT) or GapMin > 60
+    | project SessionStart = TimeGenerated, GapBeforeH = round(GapMin / 60, 1), k = 1;
+datatable(Alert:string, T:datetime) [
+    "FP DC01$ ::1", datetime(2026-09-15T15:56:14Z),
+    "TP L02 forgery", datetime(2026-09-17T19:32:50Z),
+    "FP svc-sql", datetime(2026-09-22T21:32:55Z),
+    "L04 forgery (missed)", datetime(2026-09-22T21:41:56Z)]
+| extend k = 1
+| join kind=inner starts on k
+| where SessionStart <= T + 1s
+| summarize arg_max(SessionStart, GapBeforeH) by Alert, T
+| extend MinIntoSession = round((T - SessionStart) / 1m, 1)
+| order by T asc

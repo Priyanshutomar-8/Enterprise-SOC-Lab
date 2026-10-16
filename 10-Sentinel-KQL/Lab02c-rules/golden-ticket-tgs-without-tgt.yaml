@@ -8,6 +8,9 @@ description: |
   same user inside 10 hours masks a forgery (Lab 01b missed the Module 07 Lab 04 forgery
   this way). Known FPs: stale TGTs older than the lookback, and data that starts after
   the TGT was issued. Validated in Azure Data Explorer, not in a Sentinel workspace.
+  1.1.0 (Lab 02d): service tickets requested from ::1 (the DC asking itself) are excluded.
+  Removes 1 of 2 false positives in the replayed history; the true positive is kept.
+  Accepted blind spot: a forged ticket used ON the domain controller itself.
 severity: Medium
 requiredDataConnectors:
   - connectorId: SecurityEvents
@@ -33,6 +36,7 @@ query: |
   let tgs = SecurityEvent
       | where EventID == 4769
       | where ingestion_time() > ago(runWindow)
+      | where tostring(IpAddress) != "::1"   // 1.1.0: DC's own loopback requests (Lab 02d)
       | extend AccountName = tolower(tostring(split(TargetUserName, "@")[0]));
   let tgt = SecurityEvent
       | where EventID == 4768
@@ -64,5 +68,5 @@ alertDetailsOverride:
   alertDisplayNameFormat: "Golden Ticket lead: {{AccountName}} used a service ticket with no TGT in 10h"
 eventGroupingSettings:
   aggregationKind: AlertPerResult
-version: 1.0.0
+version: 1.1.0
 kind: Scheduled
