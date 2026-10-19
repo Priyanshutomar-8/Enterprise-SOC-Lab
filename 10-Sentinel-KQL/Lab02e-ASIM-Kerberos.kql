@@ -1,0 +1,167 @@
+// Lab 02e - ASIM normalization vs. Kerberos detections.
+// Engine: ADX free cluster (MyFreeCluster/MyDatabase). Data: the 298 real DC01 4768/4769
+// events from Labs 01b/02. Batch evaluation (no schedule) - Lab 02c covers scheduling.
+//
+// Source checked 2026-10-19: Azure-Sentinel Parsers/ASimAuthentication/Parsers/
+// ASimAuthenticationMicrosoftWindowsEvent.yaml, parser Version 0.2.2, LastUpdated Sep 22, 2026.
+// Its first filter: `let LogonEvents=dynamic([4624, 4625]); let LogoffEvents=dynamic([4634, 4647]);
+// ... | where EventID in (LogonEvents) or EventID in (LogoffEvents)`.
+//
+// PREDICTIONS, written before the first run:
+//   T1  Microsoft's Windows ASIM Authentication filter keeps 0 of the 298 Kerberos events.
+//   T2  The custom Kerberos parser returns 298 rows per layout (93 x 4768, 205 x 4769).
+//   T3  SecurityEvent layout and WindowsEvent layout produce IDENTICAL normalized rows (0 diffs).
+//   T4  Golden Ticket joined on ASIM TargetUsername as-is: many alerts - 4769 carries
+//       user@REALM (UPN), 4768 carries the bare name (Simple), so almost nothing joins.
+//   T5  Golden Ticket on a normalized key (+ v1.1.0 ::1 exclusion): 2 alerts per layout,
+//       09-17 19:32:50 svc-sql (TP) and 09-22 21:32:55 svc-sql (FP) - same as Lab 02d.
+//   T6  Both layouts unioned (a host dual-homed during an MMA -> AMA migration): 4 alerts,
+//       every alert duplicated.
+//   T7  Kerberoast via AdditionalFields.TicketEncryptionType: 1 alert per layout (jdoe -> svc-sql).
+//   T8  AS-REP via AdditionalFields.PreAuthType: 0 (no PreAuthType 0 events in the archive).
+
+// =====================================================================================
+// Stand-in source tables. In Sentinel these are real tables; here they are stored
+// functions over the replay data, so the parser below can reference them by name.
+// =====================================================================================
+
+// SecurityEvent layout: Kerberos fields as columns.
+.create-or-alter function with (folder = "Lab02e", docstring = "Lab 02e stand-in for SecurityEvent (columns)")
+SecurityEvent() {
+    WazuhKerberosReal
+    | project TimeGenerated, EventID, TargetUserName, ServiceName, TicketEncryptionType,
+        PreAuthType, Status, IpAddress, Computer = "DC01.lab.local"
+}
+
+// WindowsEvent layout (AMA "Windows Events" / WEF): fields only inside a dynamic EventData bag.
+.create-or-alter function with (folder = "Lab02e", docstring = "Lab 02e stand-in for WindowsEvent (EventData bag)")
+WindowsEvent() {
+    WazuhKerberosReal
+    | project TimeGenerated, EventID, Computer = "DC01.lab.local",
+        Provider = "Microsoft-Windows-Security-Auditing",
+        EventData = bag_pack("TargetUserName", TargetUserName, "ServiceName", ServiceName,
+            "TicketEncryptionType", TicketEncryptionType, "PreAuthType", PreAuthType,
+            "Status", Status, "IpAddress", IpAddress)
+}
+
+// =====================================================================================
+// Custom ASIM Authentication parser for Windows Kerberos (4768 TGT, 4769 service ticket).
+// Naming per the schema doc: vimAuthentication<Vendor><Product> for filtering parsers.
+// Kerberos-only fields (ticket encryption type, pre-auth type) have no ASIM field, so they
+// go into AdditionalFields.
+// ADX TRAP: in a .create function command, a parameter named `disabled` is a SYNTAX ERROR
+// (control-command keyword; `flag:bool=false` works). Quoted as ['disabled'] to keep the ASIM name.
+// =====================================================================================
+.create-or-alter function with (folder = "Lab02e", docstring = "Lab 02e ASIM Authentication parser for Windows Kerberos 4768/4769")
+vimAuthenticationMicrosoftWindowsKerberos(starttime:datetime=datetime(null), endtime:datetime=datetime(null), ['disabled']:bool=false) {
+    let KerbEvents = dynamic([4768, 4769]);
+    let SecEv = SecurityEvent
+        | where not(['disabled']) and EventID in (KerbEvents)
+        | where (isnull(starttime) or TimeGenerated >= starttime) and (isnull(endtime) or TimeGenerated <= endtime)
+        | project TimeGenerated, EventID, Computer, EvUser = tostring(TargetUserName),
+            EvService = tostring(ServiceName), EvEtype = tostring(TicketEncryptionType),
+            EvPreAuth = tostring(PreAuthType), EvStatus = tostring(Status), EvIp = tostring(IpAddress),
+            Type = "SecurityEvent";
+    let WinEv = WindowsEvent
+        | where not(['disabled']) and Provider == "Microsoft-Windows-Security-Auditing" and EventID in (KerbEvents)
+        | where (isnull(starttime) or TimeGenerated >= starttime) and (isnull(endtime) or TimeGenerated <= endtime)
+        | project TimeGenerated, EventID, Computer, EvUser = tostring(EventData.TargetUserName),
+            EvService = tostring(EventData.ServiceName), EvEtype = tostring(EventData.TicketEncryptionType),
+            EvPreAuth = tostring(EventData.PreAuthType), EvStatus = tostring(EventData.Status),
+            EvIp = tostring(EventData.IpAddress), Type = "WindowsEvent";
+    union isfuzzy=true SecEv, WinEv
+    | extend
+        EventCount = int(1), EventStartTime = TimeGenerated, EventEndTime = TimeGenerated,
+        EventType = "Logon",
+        EventResult = iff(EvStatus == "0x0", "Success", "Failure"),
+        EventOriginalType = tostring(EventID),
+        EventOriginalResultDetails = EvStatus,
+        EventProduct = "Security Events", EventVendor = "Microsoft",
+        EventSchema = "Authentication", EventSchemaVersion = "1.0.0",
+        LogonProtocol = "Kerberos",
+        TargetUsername = EvUser,
+        TargetUsernameType = iff(EvUser has "@", "UPN", "Simple"),
+        TargetAppName = iff(EventID == 4768, "krbtgt", EvService),
+        TargetAppType = "Service",
+        SrcIpAddr = trim_start(@"::ffff:", EvIp),
+        Dvc = Computer, DvcHostname = tostring(split(Computer, ".")[0]),
+        TargetHostname = tostring(split(Computer, ".")[0]),
+        AdditionalFields = bag_pack("TicketEncryptionType", EvEtype, "PreAuthType", EvPreAuth)
+    | extend User = TargetUsername, IpAddr = SrcIpAddr, Application = TargetAppName
+    | project-away EvUser, EvService, EvEtype, EvPreAuth, EvStatus, EvIp, EventID, Computer
+}
+
+// =====================================================================================
+// Tests
+// =====================================================================================
+
+// --- T1: Microsoft's Windows parser filter applied to the replay data
+WazuhKerberosReal
+| summarize Total = count(), KeptByMicrosoftFilter = countif(EventID in (4624, 4625, 4634, 4647))
+
+// --- T2: parser row counts per layout
+vimAuthenticationMicrosoftWindowsKerberos()
+| summarize N = count() by Type, EventOriginalType
+
+// --- T3: layout equivalence - rows present in one layout but not the other (expect 0 / 0)
+let N = vimAuthenticationMicrosoftWindowsKerberos()
+    | extend AF = tostring(AdditionalFields)
+    | project-away AdditionalFields;
+let S = N | where Type == "SecurityEvent" | project-away Type;
+let W = N | where Type == "WindowsEvent" | project-away Type;
+union (S | join kind=leftanti W on $left.TimeGenerated == $right.TimeGenerated, TargetUsername, TargetAppName, SrcIpAddr, EventResult, AF | extend Diff = "only in SecurityEvent"),
+      (W | join kind=leftanti S on $left.TimeGenerated == $right.TimeGenerated, TargetUsername, TargetAppName, SrcIpAddr, EventResult, AF | extend Diff = "only in WindowsEvent")
+| summarize count() by Diff
+
+// --- T4/T5/T6: Golden Ticket lead on the normalized schema, per layout and unioned.
+// Key = TargetUsername as-is (T4) vs. normalized (T5). v1.1.0 excludes SrcIpAddr ::1.
+let A = vimAuthenticationMicrosoftWindowsKerberos() | where LogonProtocol == "Kerberos";
+let Run = (src:dynamic, normalize:bool) {
+    let E = A | where Type in (src)
+        | extend K = iff(normalize, tolower(tostring(split(TargetUsername, "@")[0])), TargetUsername);
+    let tgs = E | where EventOriginalType == "4769" and TargetAppName !~ "krbtgt" and SrcIpAddr != "::1";
+    let tgt = E | where EventOriginalType == "4768" | project K, TgtTime = TimeGenerated;
+    tgs
+    | join kind=leftouter tgt on K
+    | summarize P = countif(TgtTime between ((TimeGenerated - 10h) .. TimeGenerated))
+        by TimeGenerated, K, TargetAppName, SrcIpAddr, Type
+    | where P == 0
+};
+union
+    (Run(dynamic(["SecurityEvent"]), false) | extend Test = "T4 SecurityEvent, raw key"),
+    (Run(dynamic(["WindowsEvent"]), false) | extend Test = "T4 WindowsEvent, raw key"),
+    (Run(dynamic(["SecurityEvent"]), true) | extend Test = "T5 SecurityEvent, normalized key"),
+    (Run(dynamic(["WindowsEvent"]), true) | extend Test = "T5 WindowsEvent, normalized key"),
+    (Run(dynamic(["SecurityEvent", "WindowsEvent"]), true) | extend Test = "T6 both layouts unioned")
+| summarize Alerts = count(), Users = dcount(K),
+    Rows = make_list_if(strcat(format_datetime(TimeGenerated, "MM-dd HH:mm:ss"), " ", K), Test startswith "T5" or Test startswith "T6")
+    by Test
+| order by Test asc
+
+// --- T4b: why the TGT side must be EventOriginalType == "4768" and not TargetAppName == "krbtgt".
+// 4769 tickets FOR krbtgt (renewals/referrals) also normalize to TargetAppName "krbtgt".
+// Result: 25 such 4769s, all dc01$. Same 2 alerts either way on THIS data, but under the
+// TargetAppName definition a forged TGT that requests a krbtgt ticket would mask itself.
+let A = vimAuthenticationMicrosoftWindowsKerberos() | where Type == "SecurityEvent";
+A | where EventOriginalType == "4769" and TargetAppName =~ "krbtgt"
+| summarize Tickets = count(), Users = make_set(tolower(tostring(split(TargetUsername, "@")[0])))
+
+// --- T7/T8: Kerberoast and AS-REP need AdditionalFields - the source-specific part
+vimAuthenticationMicrosoftWindowsKerberos()
+| extend Etype = tostring(AdditionalFields.TicketEncryptionType), PreAuth = tostring(AdditionalFields.PreAuthType)
+| summarize
+    Kerberoast = countif(TargetAppName !~ "krbtgt" and TargetAppName !endswith "$" and Etype == "0x17"),
+    ASREP = countif(TargetAppName =~ "krbtgt" and PreAuth == "0")
+    by Type
+
+// RESULTS (2026-10-19), all as predicted unless marked:
+//   T1  0 of 298 kept by Microsoft's filter (298 are 4768/4769).
+//   T2  93 x 4768 (all Simple) + 205 x 4769 (all UPN) per layout.
+//   T3  0 rows only in SecurityEvent, 0 only in WindowsEvent (298 each).
+//   T4  raw key: 31 alerts / 4 users per layout = EVERY non-loopback service ticket orphaned.
+//       (First run used the TargetAppName TGT definition and gave 10: 21 DC01$ tickets
+//        "joined" to 4769-for-krbtgt rows, which share the user@REALM format - see T4b.)
+//   T4b 25 4769 tickets for krbtgt, all dc01$.
+//   T5  2 alerts per layout: 09-17 19:32:50 svc-sql (TP), 09-22 21:32:55 svc-sql (FP) = Lab 02d v1.1.0.
+//   T6  4 alerts unioned - every alert duplicated.
+//   T7  Kerberoast 1 per layout: jdoe@LAB.LOCAL -> svc-sql.   T8 AS-REP 0.
